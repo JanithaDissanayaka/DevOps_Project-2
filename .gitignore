@@ -47,3 +47,5 @@ next-env.d.ts
 
 .turbo/
 .swc/
+
+jenkins/mogo-secrest.yaml
