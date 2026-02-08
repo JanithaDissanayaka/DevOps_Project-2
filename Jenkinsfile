@@ -3,21 +3,21 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                scrip{
+                script{
                     echo "Build"
                 }
             }
         }
         stage('Test') {
             steps {
-                scrip{
+                script{
                     echo "Test"
                 }
             }
         }
         stage('Deploy') {
             steps {
-                scrip{
+                script{
                     echo "Deploy"
                 }
             }
