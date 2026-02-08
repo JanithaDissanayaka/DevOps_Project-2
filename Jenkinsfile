@@ -19,6 +19,7 @@ pipeline {
             steps {
                 script{
                     echo "Deploy"
+                    /*add comment to check trigger work"*/
                 }
             }
         }
