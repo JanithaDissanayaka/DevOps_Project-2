@@ -5,6 +5,10 @@ pipeline {
         nodejs 'NodeJS'
     }
 
+    environment {
+    MONGODB_URI = credentials('MONGODB_URI')
+  }
+
     stages {
         stage('Install') {
             steps {
