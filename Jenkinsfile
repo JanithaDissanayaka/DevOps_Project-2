@@ -1,25 +1,27 @@
 pipeline {
     agent any
     stages {
-        stage('Build') {
+        stage('Install') {
             steps {
                 script{
-                    echo "Build"
+                    echo "Installing dependencies ..."
+                    sh 'npm ci'
                 }
             }
         }
         stage('Test') {
             steps {
                 script{
-                    echo "Test"
+                    echo "Running Test ..."
+                    sh 'npm test'
                 }
             }
         }
-        stage('Deploy') {
+        stage('Build') {
             steps {
                 script{
-                    echo "Deploy"
-                    /*add comment to check trigger work correct "*/
+                    echo "Building ..."
+                    sh 'npm run build'
                 }
             }
         }
