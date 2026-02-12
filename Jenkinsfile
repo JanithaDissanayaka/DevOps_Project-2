@@ -38,13 +38,7 @@ pipeline {
             }
         }
 
-        stage('create Docker image'){
-            agent{
-                docker{
-                    image 'docker:cli'
-                    args
-                }
-            }
+        stage('create Docker image'){            
             steps{
                 script{
                     docker.withRegistry('https://index.docker.io/v1/', 'docker-registry-creds') {
