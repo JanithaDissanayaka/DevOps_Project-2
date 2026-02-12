@@ -7,6 +7,7 @@ pipeline {
 
     environment {
     MONGODB_URI = credentials('MONGODB_URI')
+    IMAGE='janithadissanayaka/web-app:v1'
   }
 
     stages {
@@ -18,6 +19,7 @@ pipeline {
                 }
             }
         }
+
         stage('Test') {
             steps {
                 script{
@@ -26,6 +28,7 @@ pipeline {
                 }
             }
         }
+
         stage('Build') {
             steps {
                 script{
@@ -34,5 +37,23 @@ pipeline {
                 }
             }
         }
+
+        stage('create Docker image'){
+            agent{
+                docker{
+                    image 'docker:cli'
+                    args
+                }
+            }
+            steps{
+                script{
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-registry-creds') {
+                    def app = docker.build("${IMAGE}")
+                    app.push()                   
+                }
+            }
+        }
+
+
     }
 }
