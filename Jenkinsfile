@@ -42,7 +42,7 @@ pipeline {
             steps{
                 script{
                     docker.withRegistry('https://index.docker.io/v1/', 'docker-registry-creds') {
-                    def app = docker.build("${IMAGE}")
+                    def app = docker.build("${IMAGE}", "--build-arg MONGODB_URI=${MONGODB_URI} .")
                     app.push()                   
                 }
             }
