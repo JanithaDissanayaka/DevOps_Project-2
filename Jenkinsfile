@@ -7,6 +7,7 @@ pipeline {
 
     environment {
     MONGODB_URI = credentials('MONGODB_URI')
+    IMAGE = "janithadissanayaka/learn:carsaleapp-${env.BUILD_NUMBER}"
   }
 
     stages {
@@ -18,6 +19,7 @@ pipeline {
                 }
             }
         }
+
         stage('Test') {
             steps {
                 script{
@@ -26,6 +28,7 @@ pipeline {
                 }
             }
         }
+
         stage('Build') {
             steps {
                 script{
@@ -34,5 +37,32 @@ pipeline {
                 }
             }
         }
+
+        
+
+        stage('create Docker image'){
+            when {
+                changeset "**/src/**"
+                changeset "Dockerfile"
+                changeset "package.json"
+            }
+
+            agent {
+                docker {
+                    image 'docker:cli'
+                    args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
+                }
+            }            
+            steps{
+                script{
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-registry-creds') {
+                    def app = docker.build("${IMAGE}", "--build-arg MONGODB_URI=${MONGODB_URI} .")
+                    app.push()                   
+                }
+            }
+        }
+
+
     }
+}
 }
