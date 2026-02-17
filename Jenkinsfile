@@ -6,63 +6,45 @@ pipeline {
     }
 
     environment {
-        MONGODB_URI = credentials('MONGODB_URI')
-        IMAGE = 'janithadissanayaka/learn'
-        APP_NAME = 'carsale'
-        VERSION = ''
-    }
+    MONGODB_URI = credentials('MONGODB_URI')
+    IMAGE = "janithadissanayaka/learn:carsaleapp-${env.BUILD_NUMBER}"
+  }
 
     stages {
-
-        stage('Checkout') {
-            steps {
-                checkout scm
-                sh 'git fetch --tags'
-            }
-        }
-
         stage('Install') {
             steps {
-                echo "Installing dependencies ..."
-                sh 'npm ci'
+                script{
+                    echo "Installing dependencies ..."
+                    sh 'npm ci'
+                }
             }
         }
 
         stage('Test') {
             steps {
-                echo "Running Test ..."
-                sh 'npm test || true'
+                script{
+                    echo "Running Test ..."
+                    sh 'npm test || true'
+                }
             }
         }
 
         stage('Build') {
             steps {
-                echo "Building ..."
-                sh 'npm run build'
-            }
-        }
-
-        stage('Get Git Tag') {
-            steps {
-                script {
-                    try {
-                        VERSION = sh(
-                            script: "git describe --tags --abbrev=0",
-                            returnStdout: true
-                        ).trim()
-
-                        echo "Version detected: ${VERSION}"
-                    } catch (err) {
-                        echo "No Git tag found. Skipping Docker build."
-                        VERSION = ''
-                    }
+                script{
+                    echo "Building ..."
+                    sh 'npm run build'
                 }
             }
         }
 
-        stage('Create Docker Image') {
+        
+
+        stage('create Docker image'){
             when {
-                expression { return env.VERSION?.trim() }
+                changeset "**/src/**"
+                changeset "Dockerfile"
+                changeset "package.json"
             }
 
             agent {
@@ -70,23 +52,17 @@ pipeline {
                     image 'docker:cli'
                     args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
                 }
-            }
-
-            steps {
-                script {
+            }            
+            steps{
+                script{
                     docker.withRegistry('https://index.docker.io/v1/', 'docker-registry-creds') {
-
-                        def FULL_TAG = "${APP_NAME}.${VERSION}"
-
-                        def app = docker.build(
-                            "${IMAGE}:${FULL_TAG}",
-                            "--build-arg MONGODB_URI=${MONGODB_URI} ."
-                        )
-
-                        app.push()
-                    }
+                    def app = docker.build("${IMAGE}", "--build-arg MONGODB_URI=${MONGODB_URI} .")
+                    app.push()                   
                 }
             }
         }
+
+
     }
+}
 }
