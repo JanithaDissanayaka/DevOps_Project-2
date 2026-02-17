@@ -7,7 +7,7 @@ pipeline {
 
     environment {
     MONGODB_URI = credentials('MONGODB_URI')
-    IMAGE='janithadissanayaka/web-app:v1'
+    IMAGE='janithadissanayaka/learn:carsaleapp'
   }
 
     stages {
