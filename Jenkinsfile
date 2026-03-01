@@ -72,6 +72,7 @@ pipeline {
 
             when {
                 anyOf {
+                    beforeAgent true
                     changeset "**/src/**"
                     changeset "**/app/**"
                     changeset "Dockerfile"
@@ -103,3 +104,5 @@ pipeline {
         }
     }
 }
+
+//error in docker
