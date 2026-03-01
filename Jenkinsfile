@@ -28,55 +28,91 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo "Building ..."
+                echo "Building Next.js App ..."
                 sh 'npm run build'
             }
         }
 
-        stage('Generate Docker Version') {
+        stage('Generate Semantic Version') {
 
             when {
-                anyOf {
-                    changeset "**/src/**"
-                    changeset "**/app/**"
-                    changeset "Dockerfile"
-                    changeset "package.json"
-                }
-            }
+                expression {
+                    def changedFiles = sh(
+                        script: "git diff --name-only HEAD~1 HEAD",
+                        returnStdout: true
+                    ).trim()
 
-            agent {
-                docker {
-                    image 'docker:cli'
-                    args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
+                    return changedFiles.split("\n").any { file ->
+                        file.startsWith("app/") ||
+                        file.startsWith("src/") ||
+                        file == "Dockerfile" ||
+                        file == "package.json"
+                    }
                 }
             }
 
             steps {
                 script {
 
-                    // Get latest git commit count (simple & reliable versioning)
-                    def versionNumber = sh(
-                        script: "git rev-list --count HEAD",
+                    // Get latest tag (if none exists start from v1.0.0)
+                    def latestTag = sh(
+                        script: "git describe --tags --abbrev=0 || echo v1.0.0",
                         returnStdout: true
                     ).trim()
 
-                    env.VERSION = "v${versionNumber}"
+                    echo "Latest tag: ${latestTag}"
+
+                    def cleanVersion = latestTag.replace("v", "")
+                    def parts = cleanVersion.tokenize(".")
+
+                    def major = parts[0].toInteger()
+                    def minor = parts[1].toInteger()
+                    def patch = parts[2].toInteger()
+
+                    // Get last commit message
+                    def commitMsg = sh(
+                        script: "git log -1 --pretty=%B",
+                        returnStdout: true
+                    ).trim()
+
+                    echo "Commit message: ${commitMsg}"
+
+                    if (commitMsg.contains("BREAKING CHANGE")) {
+                        major += 1
+                        minor = 0
+                        patch = 0
+                    } else if (commitMsg.startsWith("feat")) {
+                        minor += 1
+                        patch = 0
+                    } else if (commitMsg.startsWith("fix")) {
+                        patch += 1
+                    } else {
+                        patch += 1
+                    }
+
+                    env.VERSION = "v${major}.${minor}.${patch}"
                     env.IMAGE = "${REPO}:${env.VERSION}"
 
-                    echo "Generated Docker Version: ${env.VERSION}"
+                    echo "New version: ${env.VERSION}"
                 }
             }
         }
 
-        stage('Create Docker Image') {
+        stage('Build & Push Docker Image') {
 
             when {
-                anyOf {
-                    beforeAgent true
-                    changeset "**/src/**"
-                    changeset "**/app/**"
-                    changeset "Dockerfile"
-                    changeset "package.json"
+                expression {
+                    def changedFiles = sh(
+                        script: "git diff --name-only HEAD~1 HEAD",
+                        returnStdout: true
+                    ).trim()
+
+                    return changedFiles.split("\n").any { file ->
+                        file.startsWith("app/") ||
+                        file.startsWith("src/") ||
+                        file == "Dockerfile" ||
+                        file == "package.json"
+                    }
                 }
             }
 
@@ -89,20 +125,22 @@ pipeline {
 
             steps {
                 script {
+
                     docker.withRegistry('https://index.docker.io/v1/', 'docker-registry-creds') {
 
-                        def app = docker.build("${IMAGE}", "--build-arg MONGODB_URI=${MONGODB_URI} .")
+                        def app = docker.build("${env.IMAGE}", "--build-arg MONGODB_URI=${MONGODB_URI} .")
 
-                        // Push version tag (v1, v2, v3...)
-                        app.push("${env.VERSION}")
-
-                        // Push latest tag
+                        app.push(env.VERSION)
                         app.push("latest")
                     }
+
+                    echo "Docker image pushed: ${env.IMAGE}"
+
+                    // Create and push git tag
+                    sh "git tag ${env.VERSION}"
+                    sh "git push origin ${env.VERSION}"
                 }
             }
         }
     }
 }
-
-//error in docker
