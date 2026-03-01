@@ -38,6 +38,7 @@ pipeline {
             when {
                 anyOf {
                     changeset "**/src/**"
+                    changeset "**/app/**"
                     changeset "Dockerfile"
                     changeset "package.json"
                 }
@@ -72,6 +73,7 @@ pipeline {
             when {
                 anyOf {
                     changeset "**/src/**"
+                    changeset "**/app/**"
                     changeset "Dockerfile"
                     changeset "package.json"
                 }
