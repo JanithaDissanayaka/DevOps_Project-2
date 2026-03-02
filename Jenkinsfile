@@ -86,12 +86,7 @@ pipeline {
 
         stage('Build & Push Docker Image') {
 
-            agent {
-                docker {
-                    image 'docker:24.0.5-cli'
-                    args '--entrypoint="" -u root -v /var/run/docker.sock:/var/run/docker.sock'
-                }
-            }
+            agent any
 
             steps {
                 script {
