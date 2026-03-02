@@ -12,22 +12,6 @@ pipeline {
 
     stages {
 
-        stage('Checkout') {
-            steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: '*/main']],
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/JanithaDissanayaka/DevOps_Project-2.git',
-                        credentialsId: 'github_access_key'
-                    ]],
-                    extensions: [
-                        [$class: 'CloneOption', shallow: false, depth: 0]
-                    ]
-                ])
-            }
-        }
-
         stage('Install') {
             steps {
                 sh 'npm ci'
