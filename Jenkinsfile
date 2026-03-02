@@ -12,6 +12,8 @@ pipeline {
 
     stages {
 
+        // check git vrsioning check
+
         stage('Install') {
             steps {
                 sh 'npm ci'
