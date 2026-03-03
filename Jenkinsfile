@@ -20,6 +20,16 @@ pipeline {
             steps { sh 'npm run lint' }
         }
 
+        stage('Take the Version') {
+            steps { 
+                script {
+                    def packageJson = readJSON file: 'package.json'
+                    env.VERSION = packageJson.version
+                    echo "Version from package.json: ${env.VERSION}"
+                }
+             }
+        }
+
         stage('Build') {
             steps { sh 'npm run build' }
         }
@@ -30,93 +40,24 @@ pipeline {
             }
         }
 
-       /* stage('Generate Semantic Version') {
-            steps {
+        stage('Build Image') {
+            steps { 
                 script {
-
-                    // Ensure tags are fetched
-                    sh "git fetch --tags"
-
-                    def latestTag = sh(
-                        script: "git describe --tags --abbrev=0 2>/dev/null || echo v1.0.0",
-                        returnStdout: true
-                    ).trim()
-
-                    echo "Latest tag: ${latestTag}"
-
-                    def cleanVersion = latestTag.replace("v", "")
-                    def parts = cleanVersion.tokenize(".")
-
-                    def major = parts[0].toInteger()
-                    def minor = parts[1].toInteger()
-                    def patch = parts[2].toInteger()
-
-                    def commitMsg = sh(
-                        script: "git log -1 --pretty=%B",
-                        returnStdout: true
-                    ).trim()
-
-                    echo "Commit message: ${commitMsg}"
-
-                    if (commitMsg.contains("BREAKING CHANGE")) {
-                        major++
-                        minor = 0
-                        patch = 0
-                    } else if (commitMsg.startsWith("feat")) {
-                        minor++
-                        patch = 0
-                    } else {
-                        patch++
-                    }
-
-                    env.VERSION = "v${major}.${minor}.${patch}"
-                    env.IMAGE = "${REPO}:${env.VERSION}"
-
-                    echo "New version: ${env.VERSION}"
-                }
-            }
-        }
-
-        stage('Build & Push Docker Image') {
-            steps {
-                script {
-
-                    docker.withRegistry('https://index.docker.io/v1/', 'docker-registry-creds') {
-
-                        def app = docker.build(
-                            "${env.IMAGE}",
-                            "--build-arg MONGODB_URI=${MONGODB_URI} ."
-                        )
-
-                        app.push(env.VERSION)
-                        app.push("latest")
-                    }
-
+                    echo "Building the docker image"
                     withCredentials([usernamePassword(
-                        credentialsId: 'github_access_key',
-                        usernameVariable: 'GIT_USER',
-                        passwordVariable: 'GIT_PASS'
+                        credentialsId: 'docker-registry-creds',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
                     )]) {
-
                         sh """
-                            git config user.email "jenkins@local"
-                            git config user.name "Jenkins CI"
-
-                            git fetch --tags
-
-                            if git ls-remote --tags origin | grep ${env.VERSION}; then
-                                echo "Tag ${env.VERSION} already exists on remote. Skipping tag creation."
-                            else
-                                git tag ${env.VERSION}
-                                git push https://${GIT_USER}:${GIT_PASS}@github.com/JanithaDissanayaka/DevOps_Project-2.git ${env.VERSION}
-                            fi
+                            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                            docker build -t $REPO:carsale$VERSION --build-arg MONGODB_URI=${MONGODB_URI} .
                         """
+                        
                     }
 
-                    echo "Docker image pushed and tag handled successfully."
                 }
-            }
+             }
         }
-        */
     }
 }
