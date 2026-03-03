@@ -12,41 +12,25 @@ pipeline {
 
     stages {
 
-        stage('Checkout') {
-            steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: '*/main']],
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/JanithaDissanayaka/DevOps_Project-2.git',
-                        credentialsId: 'github_access_key'
-                    ]],
-                    extensions: [
-                        [$class: 'CloneOption', shallow: false, depth: 0, noTags: false]
-                    ]
-                ])
-            }
+         stage('Install Dependencies') {
+            steps { sh 'npm install' }
         }
 
-        stage('Install') {
-            steps {
-                sh 'npm ci'
-            }
-        }
-
-        stage('Lint') {
-            steps {
-                sh 'npm run lint'
-            }
+        stage('Run Lint') {
+            steps { sh 'npm run lint' }
         }
 
         stage('Build') {
+            steps { sh 'npm run build' }
+        }
+
+        stage('Archive Build') {
             steps {
-                sh 'npm run build'
+                archiveArtifacts artifacts: '.next/**', fingerprint: true
             }
         }
 
-        stage('Generate Semantic Version') {
+       /* stage('Generate Semantic Version') {
             steps {
                 script {
 
@@ -133,5 +117,6 @@ pipeline {
                 }
             }
         }
+        */
     }
 }
