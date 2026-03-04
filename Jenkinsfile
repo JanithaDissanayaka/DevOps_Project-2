@@ -40,7 +40,7 @@ pipeline {
             }
         }
 
-        sstage('Build Image') {
+        stage('Build Image') {
             steps { 
                 script {
                     echo "Building the docker image version ${env.VERSION}"
