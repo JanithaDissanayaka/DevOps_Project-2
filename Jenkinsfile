@@ -44,7 +44,8 @@ pipeline {
             steps{
                 script{
                     def currentVersion = readJSON(file: 'package.json').version
-                    def previousVersion= sh(script: "git show HEAD~1:package.json | jq -r '.version'", returnStdout: true).trim()
+                    def previousVersion= sh(script: "git show HEAD~1:package.json", returnStdout: true).trim()
+                    def previousVersion = readJSON(text: previousPackageJson).version
                     echo "Current Version: ${currentVersion}"
                     echo "Previous Version: ${previousVersion}"
                     if (currentVersion != previousVersion) {
