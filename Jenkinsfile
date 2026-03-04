@@ -40,7 +40,29 @@ pipeline {
             }
         }
 
+        stage('Check Version Change'){
+            steps{
+                script{
+                    def currentVersion = readJSON(file: 'package.json').version
+                    def previousVersion= sh(script: "git show HEAD~1:package.json | jq -r '.version'", returnStdout: true).trim()
+                    echo "Current Version: ${currentVersion}"
+                    echo "Previous Version: ${previousVersion}"
+                    if (currentVersion != previousVersion) {
+                        env.VERSION_CHANGED = "true"
+                        env.VERSION = currentVersion
+                        echo "Version has changed. Proceeding with the build."
+                    } else {
+                        env.VERSION_CHANGED = "false"
+                        echo "Version has not changed. Skipping the build."
+                    }
+                }
+            }
+        }
+
         stage('Build Image') {
+            when {
+                expression { env.VERSION_CHANGED == "true" }
+            }
             steps { 
                 script {
                     echo "Building the docker image version ${env.VERSION}"
