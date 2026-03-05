@@ -94,21 +94,24 @@ pipeline {
         stage('Update K8s Manifest') {
             steps {
                 sh '''
+                rm -rf ArgoCD
+
                 git clone git@github.com:JanithaDissanayaka/ArgoCD.git
                 cd ArgoCD
 
-                IMAGE_TAG=${BUILD_NUMBER}
+                IMAGE_TAG=${REPO}:carsale-${VERSION}
 
-                sed -i "s|image:.*|image: janitha/web:${IMAGE_TAG}|g" web.yaml
+                sed -i "s|image:.*|image: ${IMAGE_TAG}|g" web.yaml
 
                 git config user.email "jenkins@example.com"
                 git config user.name "jenkins"
 
                 git add web.yaml
-                git commit -m "Update image version to ${IMAGE_TAG}"
+                git commit -m "Update image version to ${IMAGE_TAG}" || echo "No changes to commit"
+
                 git push origin main
                 '''
-    }
-}
+            }
+        }
     }
 }
