@@ -89,5 +89,26 @@ pipeline {
                 }
             }
         }
+    /*below code is for only try to update the k8s manifest file in the ArgoCD repo, 
+    you can remove this stage if you don't want to update the manifest file in the ArgoCD repo*/
+        stage('Update K8s Manifest') {
+            steps {
+                sh '''
+                git clone git@github.com:JanithaDissanayaka/ArgoCD.git
+                cd ArgoCD
+
+                IMAGE_TAG=${BUILD_NUMBER}
+
+                sed -i "s|image:.*|image: janitha/web:${IMAGE_TAG}|g" web.yaml
+
+                git config user.email "jenkins@example.com"
+                git config user.name "jenkins"
+
+                git add web.yaml
+                git commit -m "Update image version to ${IMAGE_TAG}"
+                git push origin main
+                '''
+    }
+}
     }
 }
