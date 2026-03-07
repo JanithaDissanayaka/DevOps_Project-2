@@ -62,7 +62,13 @@ pipeline {
 
         stage('Build Image') {
             when {
-                expression { env.VERSION_CHANGED == "true" }
+                
+                anyOf {
+                    expression { env.VERSION_CHANGED == "true" }
+                    changeset "package.json"
+                    changeset "app/**"
+                    changeset "Dockerfile"
+                }
             }
             steps { 
                 script {
