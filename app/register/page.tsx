@@ -16,7 +16,7 @@ export default function RegisterPage() {
       body: JSON.stringify({ username, password }),
     });
 
-    if (res.ok) router.push("/login");
+    if (res.ok) router.push("/");
     else alert("Registration failed");
   };
 
