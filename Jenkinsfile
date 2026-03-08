@@ -95,45 +95,157 @@ pipeline {
                 }
             }
         }
-    /*below code is for only try to update the k8s manifest file in the ArgoCD repo, 
-    you can remove this stage if you don't want to update the manifest file in the ArgoCD repo*/
+
         stage('Update K8s files in ArgoCD repo') {
-    when {
-        anyOf {
-            expression { env.VERSION_CHANGED == "true" }
-            changeset "package.json"
-            changeset "app/**"
-            changeset "Dockerfile"
+            when {
+                anyOf {
+                    expression { env.VERSION_CHANGED == "true" }
+                }
+            }
+
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'github_access_key',
+                    usernameVariable: 'GITHUB_USER',
+                    passwordVariable: 'GITHUB_TOKEN'
+                )]) {
+
+                    sh """
+                    rm -rf ArgoCD
+
+                    git clone https://\$GITHUB_USER:\$GITHUB_TOKEN@github.com/JanithaDissanayaka/ArgoCD.git
+                    cd ArgoCD
+
+                    IMAGE_TAG=${REPO}:carsale-${VERSION}
+
+                    sed -i "s|image:.*|image: \${IMAGE_TAG}|g" web.yaml
+
+                    git config user.email "jenkins@example.com"
+                    git config user.name "jenkins"
+
+                    git add web.yaml
+                    git commit -m "Update image version to \${IMAGE_TAG}" || echo "No changes to commit"
+
+                    git push origin main
+                    """
+                }
+            }
+        }
+
+        stage('Provision Server') {
+    agent {
+        docker {
+            image 'bitnami/kubectl:latest'
+            args '-u root'
         }
     }
 
     steps {
-        withCredentials([usernamePassword(
-            credentialsId: 'github_access_key',
-            usernameVariable: 'GITHUB_USER',
-            passwordVariable: 'GITHUB_TOKEN'
-        )]) {
+        withCredentials([
+            [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CRED']
+        ]) {
 
-            sh """
-            rm -rf ArgoCD
+            dir('Terraform') {
+                sh '''
+                    terraform init
+                    terraform apply -auto-approve
 
-            git clone https://\$GITHUB_USER:\$GITHUB_TOKEN@github.com/JanithaDissanayaka/ArgoCD.git
-            cd ArgoCD
+                    aws eks update-kubeconfig \
+                        --region $AWS_REGION \
+                        --name $CLUSTER_NAME
 
-            IMAGE_TAG=${REPO}:carsale-${VERSION}
-
-            sed -i "s|image:.*|image: \${IMAGE_TAG}|g" web.yaml
-
-            git config user.email "jenkins@example.com"
-            git config user.name "jenkins"
-
-            git add web.yaml
-            git commit -m "Update image version to \${IMAGE_TAG}" || echo "No changes to commit"
-
-            git push origin main
-            """
+                    kubectl get nodes
+                '''
+            }
         }
     }
 }
     }
 }
+
+/* stage('Provision Server') {
+            agent {
+                docker {
+                    image 'hashicorp/terraform:1.6'
+                    args '--entrypoint="" -u root'
+                }
+            }
+            steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CRED']
+                ]) {
+                    dir('Terraform') {
+                        sh '''
+
+                            # 1. Install AWS CLI and curl (needed for kubectl)
+                            apk add --no-cache aws-cli curl ca-certificates openssl 
+                            update-ca-certificates
+
+                            # 2. Install kubectl manually
+                            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+                            chmod +x kubectl
+                            mv kubectl /usr/local/bin/
+
+                            # 3. Run Terraform
+                            terraform init
+                            terraform apply --auto-approve
+                            
+                            # 4. Update Kubeconfig
+                            sleep 60
+                            aws eks update-kubeconfig --region $AWS_REGION --name $CLUSTER_NAME --kubeconfig $WORKSPACE/kubeconfig
+                            
+                            # 5. Verify connectivity
+                            kubectl get nodes --kubeconfig $WORKSPACE/kubeconfig
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to EKS with Ansible') {
+                    agent {
+                        docker {
+                            image 'docker:cli'
+                            args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
+                        }
+                    }
+                    steps {
+                        withCredentials([
+                            usernamePassword(
+                                credentialsId: 'docker-registry-creds',
+                                usernameVariable: 'DOCKER_USER',
+                                passwordVariable: 'DOCKER_PASS'
+                            ),
+                            [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CRED']
+
+                        ]) {
+                            sh '''
+                                # 1. Install dependencies
+                                apk add --no-cache python3 py3-pip curl
+                                pip3 install ansible kubernetes --break-system-packages
+                                apk add --no-cache python3 py3-pip curl aws-cli
+
+                                # 2. Install kubectl
+                                curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+                                install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+                                # 3. Setup Environment
+                                export KUBECONFIG=$WORKSPACE/kubeconfig
+                                
+                                AUTH_STRING=$(echo -n "$DOCKER_USER:$DOCKER_PASS" | base64)
+                                export DOCKER_CONFIG_JSON=$(echo -n '{"auths":{"https://index.docker.io/v1/":{"username":"'$DOCKER_USER'","password":"'$DOCKER_PASS'","email":"email@example.com","auth":"'$AUTH_STRING'"} }}' | base64 -w 0)
+
+                                # --- CRITICAL FIX ---
+                                # Force Ansible to use standard YAML output (bypasses the broken config plugin)
+                                sed -i 's/community.general.yaml/yaml/g' Ansible/ansible.cfg
+                                # --------------------
+
+                                # 4. Run Ansible
+                                export KUBECONFIG=$WORKSPACE/kubeconfig
+                                cd Ansible                        
+                                ansible-playbook deploy-to-eks-cluster.yaml
+                            '''
+                        }
+                    }
+                }
+*/
