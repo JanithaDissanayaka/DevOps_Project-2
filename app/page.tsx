@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
 
 export default function LoginPage() {
   const router = useRouter();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,7 +23,6 @@ export default function LoginPage() {
     setLoading(false);
 
     if (res.ok) {
-      // cookie is set by API
       router.push("/home");
     } else {
       alert("Invalid credentials");
@@ -29,15 +30,32 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black">
+    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-black to-slate-900 overflow-hidden">
+
+      {/* soft moving glow background */}
+
+      <motion.div
+        animate={{ x: [0, 100, -100, 0], y: [0, -50, 50, 0] }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        className="absolute w-[500px] h-[500px] bg-indigo-500 rounded-full blur-[180px] opacity-20"
+      />
+
+      <motion.div
+        animate={{ x: [0, -120, 120, 0], y: [0, 80, -80, 0] }}
+        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+        className="absolute w-[500px] h-[500px] bg-purple-500 rounded-full blur-[200px] opacity-20"
+      />
+
+      {/* Login Card */}
+
       <div className="relative w-full max-w-md p-8 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl">
 
-        <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 opacity-20 blur"></div>
+        <div className="text-white">
 
-        <div className="relative text-white">
           <h1 className="text-3xl font-bold text-center mb-2">
             Welcome Back
           </h1>
+
           <p className="text-center text-gray-300 mb-8">
             Login to AutoMarket
           </p>
@@ -61,7 +79,7 @@ export default function LoginPage() {
           <button
             onClick={handleLogin}
             disabled={loading}
-            className="w-full py-3 rounded-lg font-semibold text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:scale-[1.02] transition disabled:opacity-60"
+            className="w-full py-3 rounded-lg font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:scale-[1.02] transition disabled:opacity-60"
           >
             {loading ? "Logging in..." : "Login"}
           </button>
@@ -72,8 +90,10 @@ export default function LoginPage() {
               Create an account
             </a>
           </p>
+
         </div>
       </div>
+
     </div>
   );
 }

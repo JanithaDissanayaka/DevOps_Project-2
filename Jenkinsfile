@@ -97,27 +97,43 @@ pipeline {
         }
     /*below code is for only try to update the k8s manifest file in the ArgoCD repo, 
     you can remove this stage if you don't want to update the manifest file in the ArgoCD repo*/
-        stage('Update K8s Manifest') {
-            steps {
-                sh '''
-                rm -rf ArgoCD
-
-                git clone git@github.com:JanithaDissanayaka/ArgoCD.git
-                cd ArgoCD
-
-                IMAGE_TAG=${REPO}:carsale-${VERSION}
-
-                sed -i "s|image:.*|image: ${IMAGE_TAG}|g" web.yaml
-
-                git config user.email "jenkins@example.com"
-                git config user.name "jenkins"
-
-                git add web.yaml
-                git commit -m "Update image version to ${IMAGE_TAG}" || echo "No changes to commit"
-
-                git push origin main
-                '''
-            }
+        stage('Update K8s files in ArgoCD repo') {
+    when {
+        anyOf {
+            expression { env.VERSION_CHANGED == "true" }
+            changeset "package.json"
+            changeset "app/**"
+            changeset "Dockerfile"
         }
+    }
+
+    steps {
+        withCredentials([usernamePassword(
+            credentialsId: 'github_access_key',
+            usernameVariable: 'GITHUB_USER',
+            passwordVariable: 'GITHUB_TOKEN'
+        )]) {
+
+            sh """
+            rm -rf ArgoCD
+
+            git clone https://\$GITHUB_USER:\$GITHUB_TOKEN@github.com/JanithaDissanayaka/ArgoCD.git
+            cd ArgoCD
+
+            IMAGE_TAG=${REPO}:carsale-${VERSION}
+
+            sed -i "s|image:.*|image: \${IMAGE_TAG}|g" web.yaml
+
+            git config user.email "jenkins@example.com"
+            git config user.name "jenkins"
+
+            git add web.yaml
+            git commit -m "Update image version to \${IMAGE_TAG}" || echo "No changes to commit"
+
+            git push origin main
+            """
+        }
+    }
+}
     }
 }
