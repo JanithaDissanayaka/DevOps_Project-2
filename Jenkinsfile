@@ -162,6 +162,7 @@ pipeline {
 }
     }
 }
+}
 
 /* stage('Provision Server') {
             agent {
