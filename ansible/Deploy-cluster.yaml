@@ -1,0 +1,24 @@
+- name: Deploy ArgoCD in cluster
+  hosts: local
+  connection: local
+  gather_facts: no
+
+  vars:
+    kubeconfig_path: "{{ lookup('env','KUBECONFIG') }}"
+
+  tasks:
+
+    - name: Create ArgoCD namespace
+      kubernetes.core.k8s:
+        name: argocd
+        api_version: v1
+        kind: Namespace
+        state: present
+        kubeconfig: "{{ kubeconfig_path }}"
+
+    - name: Install ArgoCD
+      kubernetes.core.k8s:
+        state: present
+        src: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+        namespace: argocd
+        kubeconfig: "{{ kubeconfig_path }}"
