@@ -8,6 +8,8 @@ pipeline {
     environment {
         MONGODB_URI = credentials('MONGODB_URI')
         REPO = "janithadissanayaka/learn"
+        AWS_REGION = 'ap-south-1'
+        CLUSTER_NAME = 'car-sale'
     }
 
     stages {
@@ -198,7 +200,8 @@ pipeline {
                             kubectl get nodes --kubeconfig $WORKSPACE/kubeconfig
                         '''
                     }
-                }
+                }AWS_REGION = 'your-aws-region'
+        CLUSTER_NAME = 'your-eks-cluster-name'
             }
         }
 
