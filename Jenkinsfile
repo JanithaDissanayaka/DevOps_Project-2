@@ -134,12 +134,12 @@ pipeline {
 
         stage('Provision Server') {
     agent {
-        docker {
-            image 'bitnami/kubectl:latest'
-            args '-u root'
-        }
-    }
-
+        agent {
+                docker {
+                    image 'hashicorp/terraform:1.6'
+                    args '--entrypoint="" -u root'
+                }
+            }
     steps {
         withCredentials([
             [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDENTIALS']
