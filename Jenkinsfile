@@ -135,6 +135,14 @@ pipeline {
         }
 
         stage('Provision Server') {
+            when {
+                anyOf {
+                    changeset "terraform/*.tf"
+                    changeset "terraform/*.tfvars"
+                    expression { currentBuild.number == 1 }
+                }
+            }
+
         agent {
                 docker {
                     image 'janithadissanayaka/terraform-eks:latest'
