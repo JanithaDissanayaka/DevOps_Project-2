@@ -145,7 +145,7 @@ pipeline {
             [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDENTIALS']
         ]) {
 
-            dir('Terraform') {
+            dir('terraform') {
                 sh '''
                     terraform init
                     terraform apply -auto-approve
