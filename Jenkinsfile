@@ -137,7 +137,7 @@ pipeline {
         stage('Provision Server') {
         agent {
                 docker {
-                    image 'hashicorp/terraform:1.6'
+                    image 'janithadissanayaka/terraform-eks:latest'
                     args '--entrypoint="" -u root'
                 }
             }
