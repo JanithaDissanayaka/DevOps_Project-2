@@ -142,7 +142,7 @@ pipeline {
 
     steps {
         withCredentials([
-            [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CRED']
+            [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDENTIALS']
         ]) {
 
             dir('Terraform') {
