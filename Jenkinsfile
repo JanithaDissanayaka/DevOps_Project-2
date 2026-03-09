@@ -133,7 +133,6 @@ pipeline {
         }
 
         stage('Provision Server') {
-    agent {
         agent {
                 docker {
                     image 'hashicorp/terraform:1.6'
@@ -162,7 +161,7 @@ pipeline {
 }
     }
 }
-}
+
 
 /* stage('Provision Server') {
             agent {
