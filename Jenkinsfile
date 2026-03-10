@@ -173,7 +173,7 @@ pipeline {
         stage('deploy to eks with ansible'){
     agent {
         docker {
-            image 'janithadissanayaka/ansible:v1'
+            image 'docker:cli'
             args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
