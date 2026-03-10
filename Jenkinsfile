@@ -184,21 +184,31 @@ pipeline {
         ]) {
 
             sh '''
-                pip install kubernetes openshift
+                # 1. Install dependencies
+                                apk add --no-cache python3 py3-pip curl
+                                pip3 install ansible kubernetes --break-system-packages
+                                apk add --no-cache python3 py3-pip curl aws-cli
 
-                ansible-galaxy collection install kubernetes.core
+                                # 2. Install kubectl
+                                curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+                                install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
-                aws eks update-kubeconfig \
-                    --region $AWS_REGION \
-                    --name $CLUSTER_NAME \
-                    --kubeconfig $WORKSPACE/kubeconfig
+                                # 3. Setup Environment
+                                export KUBECONFIG=$WORKSPACE/kubeconfig
+                                
+                                AUTH_STRING=$(echo -n "$DOCKER_USER:$DOCKER_PASS" | base64)
+                                export DOCKER_CONFIG_JSON=$(echo -n '{"auths":{"https://index.docker.io/v1/":{"username":"'$DOCKER_USER'","password":"'$DOCKER_PASS'","email":"email@example.com","auth":"'$AUTH_STRING'"} }}' | base64 -w 0)
 
-                export KUBECONFIG=$WORKSPACE/kubeconfig
+                                # --- CRITICAL FIX ---
+                                # Force Ansible to use standard YAML output (bypasses the broken config plugin)
+                                sed -i 's/community.general.yaml/yaml/g' Ansible/ansible.cfg
+                                # --------------------
 
-                kubectl get nodes
+                                # 4. Run Ansible
+                                export KUBECONFIG=$WORKSPACE/kubeconfig
 
-                cd ansible
-                ansible-playbook Deploy-cluster.yaml
+                                cd ansible
+                                ansible-playbook Deploy-cluster.yaml
             '''
         }
     }
