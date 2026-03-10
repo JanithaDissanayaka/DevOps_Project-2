@@ -196,9 +196,6 @@ pipeline {
                                 # 3. Setup Environment
                                 export KUBECONFIG=$WORKSPACE/kubeconfig
                                 
-                                AUTH_STRING=$(echo -n "$DOCKER_USER:$DOCKER_PASS" | base64)
-                                export DOCKER_CONFIG_JSON=$(echo -n '{"auths":{"https://index.docker.io/v1/":{"username":"'$DOCKER_USER'","password":"'$DOCKER_PASS'","email":"email@example.com","auth":"'$AUTH_STRING'"} }}' | base64 -w 0)
-
                                 # --- CRITICAL FIX ---
                                 # Force Ansible to use standard YAML output (bypasses the broken config plugin)
                                 sed -i 's/community.general.yaml/yaml/g' Ansible/ansible.cfg
