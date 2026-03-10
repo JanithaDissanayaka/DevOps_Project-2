@@ -185,7 +185,7 @@ pipeline {
 
                     sh '''
                         export KUBECONFIG=$WORKSPACE/kubeconfig
-                        cd Ansible
+                        cd ansible
                         ansible-playbook Deploy-cluster.yaml
                     '''
                 }

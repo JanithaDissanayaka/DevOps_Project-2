@@ -1,6 +1,7 @@
 provider "aws" {
   region = "ap-south-1"
 }
+#variable
 
 variable cidr {} 
 variable private_subnets {}
