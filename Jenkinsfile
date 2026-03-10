@@ -149,114 +149,52 @@ pipeline {
                     args '--entrypoint="" -u root'
                 }
             }
-    steps {
-        withCredentials([
-            [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDENTIALS']
-        ]) {
-
-            dir('terraform') {
-                sh '''
-                    terraform init
-                    terraform apply -auto-approve
-
-                    aws eks update-kubeconfig \
-                        --region $AWS_REGION \
-                        --name $CLUSTER_NAME
-
-                    kubectl get nodes
-                '''
-            }
-        }
-    }
-}
-    }
-}
-
-
-/* stage('Provision Server') {
-            agent {
-                docker {
-                    image 'hashicorp/terraform:1.6'
-                    args '--entrypoint="" -u root'
-                }
-            }
             steps {
                 withCredentials([
-                    [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CRED']
+                    [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDENTIALS']
                 ]) {
-                    dir('Terraform') {
+
+                    dir('terraform') {
                         sh '''
-
-                            # 1. Install AWS CLI and curl (needed for kubectl)
-                            apk add --no-cache aws-cli curl ca-certificates openssl 
-                            update-ca-certificates
-
-                            # 2. Install kubectl manually
-                            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-                            chmod +x kubectl
-                            mv kubectl /usr/local/bin/
-
-                            # 3. Run Terraform
                             terraform init
-                            terraform apply --auto-approve
-                            
-                            # 4. Update Kubeconfig
-                            sleep 60
-                            aws eks update-kubeconfig --region $AWS_REGION --name $CLUSTER_NAME --kubeconfig $WORKSPACE/kubeconfig
-                            
-                            # 5. Verify connectivity
-                            kubectl get nodes --kubeconfig $WORKSPACE/kubeconfig
+                            terraform apply -auto-approve
+
+                            aws eks update-kubeconfig \
+                                --region $AWS_REGION \
+                                --name $CLUSTER_NAME
+
+                            kubectl get nodes
                         '''
                     }
-                }AWS_REGION = 'your-aws-region'
-        CLUSTER_NAME = 'your-eks-cluster-name'
+                }
             }
         }
 
-        stage('Deploy to EKS with Ansible') {
-                    agent {
-                        docker {
-                            image 'docker:cli'
-                            args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
-                        }
-                    }
-                    steps {
-                        withCredentials([
-                            usernamePassword(
-                                credentialsId: 'docker-registry-creds',
-                                usernameVariable: 'DOCKER_USER',
-                                passwordVariable: 'DOCKER_PASS'
-                            ),
-                            [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CRED']
-
-                        ]) {
-                            sh '''
-                                # 1. Install dependencies
-                                apk add --no-cache python3 py3-pip curl
-                                pip3 install ansible kubernetes --break-system-packages
-                                apk add --no-cache python3 py3-pip curl aws-cli
-
-                                # 2. Install kubectl
-                                curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-                                install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-
-                                # 3. Setup Environment
-                                export KUBECONFIG=$WORKSPACE/kubeconfig
-                                
-                                AUTH_STRING=$(echo -n "$DOCKER_USER:$DOCKER_PASS" | base64)
-                                export DOCKER_CONFIG_JSON=$(echo -n '{"auths":{"https://index.docker.io/v1/":{"username":"'$DOCKER_USER'","password":"'$DOCKER_PASS'","email":"email@example.com","auth":"'$AUTH_STRING'"} }}' | base64 -w 0)
-
-                                # --- CRITICAL FIX ---
-                                # Force Ansible to use standard YAML output (bypasses the broken config plugin)
-                                sed -i 's/community.general.yaml/yaml/g' Ansible/ansible.cfg
-                                # --------------------
-
-                                # 4. Run Ansible
-                                export KUBECONFIG=$WORKSPACE/kubeconfig
-                                cd Ansible                        
-                                ansible-playbook deploy-to-eks-cluster.yaml
-                            '''
-                        }
-                    }
+        stage('deploy to eks with ansible'){
+            agent {
+                docker {
+                    image 'janithadissanayaka/ansible:v1'
+                    args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
                 }
-*/
+            }
+            
+            steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDENTIALS']
+                ]) {
+
+                    sh '''
+                        export KUBECONFIG=$WORKSPACE/kubeconfig
+                        cd Ansible
+                        ansible-playbook Deploy-cluster.yaml
+                    '''
+                }
+                    }
+                    
+                }
+
+
+    }
+}
+
+
