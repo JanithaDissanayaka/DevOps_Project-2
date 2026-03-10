@@ -198,7 +198,7 @@ pipeline {
                                 
                                 # --- CRITICAL FIX ---
                                 # Force Ansible to use standard YAML output (bypasses the broken config plugin)
-                                sed -i 's/community.general.yaml/yaml/g' Ansible/ansible.cfg
+                                sed -i 's/community.general.yaml/yaml/g' ansible/ansible.cfg
                                 # --------------------
 
                                 # 4. Run Ansible
