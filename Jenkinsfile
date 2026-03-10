@@ -185,6 +185,9 @@ pipeline {
 
                     sh '''
                         export KUBECONFIG=$WORKSPACE/kubeconfig
+                        pip install kubernetes openshift
+
+                        ansible-galaxy collection install kubernetes.core
                         cd ansible
                         ansible-playbook Deploy-cluster.yaml
                     '''

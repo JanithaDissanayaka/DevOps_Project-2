@@ -22,3 +22,14 @@
         src: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
         namespace: argocd
         kubeconfig: "{{ kubeconfig_path }}"
+
+    - name: Wait for ArgoCD pods to be running
+      kubernetes.core.k8s_info:
+        kind: Pod
+        namespace: argocd
+        kubeconfig: "{{ kubeconfig_path }}"
+      register: pod_status
+      retries: 30
+      delay: 10
+      until: >
+        pod_status.resources | selectattr('status.phase','equalto','Running') | list | length > 2
