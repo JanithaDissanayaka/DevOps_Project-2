@@ -171,30 +171,38 @@ pipeline {
         }
 
         stage('deploy to eks with ansible'){
-            agent {
-                docker {
-                    image 'janithadissanayaka/ansible:v1'
-                    args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
-                }
-            }
-            
-            steps {
-                withCredentials([
-                    [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDENTIALS']
-                ]) {
+    agent {
+        docker {
+            image 'janithadissanayaka/ansible:v1'
+            args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
 
-                    sh '''
-                        export KUBECONFIG=$WORKSPACE/kubeconfig
-                        pip install kubernetes openshift
+    steps {
+        withCredentials([
+            [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDENTIALS']
+        ]) {
 
-                        ansible-galaxy collection install kubernetes.core
-                        cd ansible
-                        ansible-playbook Deploy-cluster.yaml
-                    '''
-                }
-                    }
-                    
-                }
+            sh '''
+                pip install kubernetes openshift
+
+                ansible-galaxy collection install kubernetes.core
+
+                aws eks update-kubeconfig \
+                    --region $AWS_REGION \
+                    --name $CLUSTER_NAME \
+                    --kubeconfig $WORKSPACE/kubeconfig
+
+                export KUBECONFIG=$WORKSPACE/kubeconfig
+
+                kubectl get nodes
+
+                cd ansible
+                ansible-playbook Deploy-cluster.yaml
+            '''
+        }
+    }
+}
 
 
     }
