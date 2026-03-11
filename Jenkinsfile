@@ -173,7 +173,7 @@ pipeline {
         stage('deploy to eks with ansible'){
     agent {
         docker {
-            image 'janithadissanayaka/ansible-k8s:latest'
+            image 'janithadissanayaka/ansible-k8s-aws:latest'
             args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
