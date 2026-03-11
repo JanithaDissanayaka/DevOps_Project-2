@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: 'https://github.com/JanithaDissanayaka/ArgoCD.git'
     targetRevision: HEAD
-    path: ansible
+    path: .
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: default
