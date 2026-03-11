@@ -159,9 +159,12 @@ pipeline {
                             terraform init
                             terraform apply -auto-approve
 
-                            aws eks update-kubeconfig \
-                                --region $AWS_REGION \
-                                --name $CLUSTER_NAME
+                            aws eks update-cluster-config \
+                                --region ap-south-1 \
+                                --name car-sale \
+                                --logging '{"clusterLogging":[{"types":["api","audit","authenticator","controllerManager","scheduler"],"enabled":true}]}'
+                            
+                            kubectl apply -f https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-insights/latest/k8s-deployment-manifest-templates/deployment-mode/daemonset/container-insights-monitoring/quickstart/cwagent-fluent-bit-quickstart.yaml
 
                             kubectl get nodes
                         '''
