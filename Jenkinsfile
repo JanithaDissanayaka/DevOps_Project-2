@@ -159,12 +159,9 @@ pipeline {
                             terraform init
                             terraform apply -auto-approve
 
-                            aws eks update-cluster-config \
-                                --region ap-south-1 \
-                                --name car-sale \
-                                --logging '{"clusterLogging":[{"types":["api","audit","authenticator","controllerManager","scheduler"],"enabled":true}]}'
-                            
-                            kubectl apply -f https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-insights/latest/k8s-deployment-manifest-templates/deployment-mode/daemonset/container-insights-monitoring/quickstart/cwagent-fluent-bit-quickstart.yaml
+                            aws eks update-kubeconfig \
+                                --region $AWS_REGION \
+                                --name $CLUSTER_NAME
 
                             kubectl get nodes
                         '''
@@ -190,10 +187,10 @@ pipeline {
                 
                 sed -i 's/community.general.yaml/yaml/g' ansible/ansible.cfg
 
-                aws eks update-kubeconfig \
-                    --region ap-south-1 \
-                    --name car-sale \
-                    --kubeconfig $WORKSPACE/kubeconfig
+                aws eks update-cluster-config \
+--region ap-south-1 \
+--name car-sale \
+--logging '{"clusterLogging":[{"types":["api","audit","authenticator","controllerManager","scheduler"],"enabled":true}]}'
 
                 export KUBECONFIG=$WORKSPACE/kubeconfig
 
@@ -203,6 +200,8 @@ pipeline {
                 cd ansible
                 ansible-playbook Deploy-cluster.yaml
                 kubectl apply -f argocd.yaml
+
+                kubectl apply -f https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-insights/latest/k8s-deployment-manifest-templates/deployment-mode/daemonset/container-insights-monitoring/quickstart/cwagent-fluent-bit-quickstart.yaml
 
                 kubectl get pods
             '''
