@@ -1,5 +1,5 @@
 - name: Deploy ArgoCD and Prometheus in EKS cluster
-  hosts: local
+  hosts: localhost
   connection: local
   gather_facts: no
 
@@ -43,12 +43,10 @@
         kubeconfig: "{{ kubeconfig_path }}"
 
     - name: Add prometheus helm repo
-      ansible.builtin.command:
-        cmd: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+      ansible.builtin.command: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 
     - name: Update helm repo
-      ansible.builtin.command:
-        cmd: helm repo update
+      ansible.builtin.command: helm repo update
 
     - name: Install Prometheus Stack
       kubernetes.core.helm:
