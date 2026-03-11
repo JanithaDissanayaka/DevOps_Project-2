@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/JanithaDissanayaka/DevOps_Project-2.git'
+    repoURL: 'https://github.com/JanithaDissanayaka/ArgoCD.git'
     targetRevision: HEAD
     path: ansible
   destination:
