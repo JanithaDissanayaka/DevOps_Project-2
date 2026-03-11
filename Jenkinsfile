@@ -202,6 +202,7 @@ pipeline {
                 # Run Ansible
                 cd ansible
                 ansible-playbook Deploy-cluster.yaml
+                kubectl apply -f argocd.yaml
             '''
         }
     }
