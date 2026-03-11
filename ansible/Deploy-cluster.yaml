@@ -42,11 +42,21 @@
         state: present
         kubeconfig: "{{ kubeconfig_path }}"
 
+    - name: Install Helm
+      ansible.builtin.shell: |
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      args:
+        executable: /bin/bash
+
     - name: Add prometheus helm repo
       ansible.builtin.command: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
 
     - name: Update helm repo
       ansible.builtin.command: helm repo update
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
 
     - name: Install Prometheus Stack
       kubernetes.core.helm:
