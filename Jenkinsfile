@@ -185,10 +185,8 @@ pipeline {
 
             sh '''
                 
-                               # Fix ansible output plugin issue
                 sed -i 's/community.general.yaml/yaml/g' ansible/ansible.cfg
 
-                # Configure kubeconfig for EKS
                 aws eks update-kubeconfig \
                     --region ap-south-1 \
                     --name car-sale \
@@ -196,13 +194,14 @@ pipeline {
 
                 export KUBECONFIG=$WORKSPACE/kubeconfig
 
-                # Verify cluster connection
                 kubectl get nodes
 
                 # Run Ansible
                 cd ansible
                 ansible-playbook Deploy-cluster.yaml
                 kubectl apply -f argocd.yaml
+
+                kubectl get pods
             '''
         }
     }
