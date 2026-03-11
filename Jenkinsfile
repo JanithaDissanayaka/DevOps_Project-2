@@ -173,7 +173,7 @@ pipeline {
         stage('deploy to eks with ansible'){
     agent {
         docker {
-            image 'docker:cli'
+            image 'janithadissanayaka/ansible-k8s:latest'
             args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
@@ -184,28 +184,24 @@ pipeline {
         ]) {
 
             sh '''
-                # 1. Install dependencies
-                                apk add --no-cache python3 py3-pip curl
-                                pip3 install ansible kubernetes --break-system-packages
-                                apk add --no-cache python3 py3-pip curl aws-cli
+                
+                               # Fix ansible output plugin issue
+                sed -i 's/community.general.yaml/yaml/g' ansible/ansible.cfg
 
-                                # 2. Install kubectl
-                                curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-                                install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+                # Configure kubeconfig for EKS
+                aws eks update-kubeconfig \
+                    --region ap-south-1 \
+                    --name car-sale \
+                    --kubeconfig $WORKSPACE/kubeconfig
 
-                                # 3. Setup Environment
-                                export KUBECONFIG=$WORKSPACE/kubeconfig
-                                
-                                # --- CRITICAL FIX ---
-                                # Force Ansible to use standard YAML output (bypasses the broken config plugin)
-                                sed -i 's/community.general.yaml/yaml/g' ansible/ansible.cfg
-                                # --------------------
+                export KUBECONFIG=$WORKSPACE/kubeconfig
 
-                                # 4. Run Ansible
-                                export KUBECONFIG=$WORKSPACE/kubeconfig
+                # Verify cluster connection
+                kubectl get nodes
 
-                                cd ansible
-                                ansible-playbook Deploy-cluster.yaml
+                # Run Ansible
+                cd ansible
+                ansible-playbook Deploy-cluster.yaml
             '''
         }
     }
