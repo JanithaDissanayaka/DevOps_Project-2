@@ -6,8 +6,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'git@github.com:JanithaDissanayaka/ArgoCD.git'
+    repoURL: 'https://github.com/JanithaDissanayaka/DevOps_Project-2.git'
     targetRevision: HEAD
+    path: ansible
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: default
