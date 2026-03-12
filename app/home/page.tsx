@@ -164,29 +164,26 @@ export default function HomePage() {
 
 
       {/* FEATURED */}
-<section className="max-w-14xl mx-auto px-8 py-24 overflow-hidden">
+<section className="max-w-10xl mx-auto px-8 py-24 overflow-hidden">
 
   <div className="flex justify-center items-center mb-14">
     <h3 className="text-4xl font-semibold">
       Featured <span className="text-yellow-400">Cars</span>
     </h3>
-
-    
   </div>
-
   <div className="relative overflow-hidden">
 
     <motion.div
       className="flex gap-8"
-      animate={{ x: ["0%", "-100%"] }}
+      animate={{ x: ["0px", "-1056px"] }}
       transition={{
         ease: "linear",
-        duration:100,
+        duration: 18,
         repeat: Infinity
       }}
     >
 
-      {[...vehicles, ...vehicles].map((car, i) => (
+      {[...vehicles, ...vehicles, ...vehicles].map((car, i) => (
 
         <div
           key={i}
@@ -237,22 +234,22 @@ export default function HomePage() {
 
     </motion.div>
 
+  </div>
+  <div className="flex justify-center items-center mb-14 pt-4">
     <button
       onClick={() => router.push("/browse")}
-      className="text-sm border border-white/20 px-4 py-2  m-8"
+      className="text-sm border border-white/20 px-4 py-2 rounded-lg hover:border-yellow-400 hover:text-yellow-400 transition justify-end ml-auto"
     >
       View All
     </button>
-
   </div>
 
 </section>
 
-
       {/* BROWSE + FILTER */}
       <section className="max-w-12xl mx-auto px-8 pb-24">
 
-        <h3 className="text-4xl font-semibold mb-10">
+        <h3 className="text-4xl font-semibold mb-10 justify-center items-center flex">
           Browse <span className="text-yellow-400">Cars</span>
         </h3>
 

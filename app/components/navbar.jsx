@@ -10,7 +10,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
         {/* LOGO */}
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-start gap-2">
 
           <span className="text-2xl font-bold text-white tracking-wide">
             Auto<span className="text-yellow-500">Lux</span>
