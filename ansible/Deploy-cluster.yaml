@@ -41,6 +41,11 @@
       kind: Namespace
       state: present
       kubeconfig: "{{ kubeconfig_path }}"
+  
+  - name: Install dependencies
+    ansible.builtin.shell: |
+      apt-get update
+      apt-get install -y curl openssl
 
   - name: Install Helm
     ansible.builtin.shell: |
