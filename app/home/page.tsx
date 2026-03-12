@@ -166,17 +166,12 @@ export default function HomePage() {
       {/* FEATURED */}
 <section className="max-w-14xl mx-auto px-8 py-24 overflow-hidden">
 
-  <div className="flex justify-between items-center mb-14">
+  <div className="flex justify-center items-center mb-14">
     <h3 className="text-4xl font-semibold">
       Featured <span className="text-yellow-400">Cars</span>
     </h3>
 
-    <button
-      onClick={() => router.push("/browse")}
-      className="text-sm border border-white/20 px-4 py-2 rounded-lg hover:border-yellow-400 hover:text-yellow-400 transition"
-    >
-      View All
-    </button>
+    
   </div>
 
   <div className="relative overflow-hidden">
@@ -186,7 +181,7 @@ export default function HomePage() {
       animate={{ x: ["0%", "-100%"] }}
       transition={{
         ease: "linear",
-        duration: 20,
+        duration:100,
         repeat: Infinity
       }}
     >
@@ -242,13 +237,20 @@ export default function HomePage() {
 
     </motion.div>
 
+    <button
+      onClick={() => router.push("/browse")}
+      className="text-sm border border-white/20 px-4 py-2  m-8"
+    >
+      View All
+    </button>
+
   </div>
 
 </section>
 
 
       {/* BROWSE + FILTER */}
-      <section className="max-w-7xl mx-auto px-8 pb-24">
+      <section className="max-w-12xl mx-auto px-8 pb-24">
 
         <h3 className="text-4xl font-semibold mb-10">
           Browse <span className="text-yellow-400">Cars</span>
