@@ -8,62 +8,66 @@
 
   tasks:
 
-    - name: Create ArgoCD namespace
-      kubernetes.core.k8s:
-        name: argocd
-        api_version: v1
-        kind: Namespace
-        state: present
-        kubeconfig: "{{ kubeconfig_path }}"
+  - name: Create ArgoCD namespace
+    kubernetes.core.k8s:
+      name: argocd
+      api_version: v1
+      kind: Namespace
+      state: present
+      kubeconfig: "{{ kubeconfig_path }}"
 
-    - name: Install ArgoCD
-      kubernetes.core.k8s:
-        state: present
-        src: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-        namespace: argocd
-        kubeconfig: "{{ kubeconfig_path }}"
+  - name: Install ArgoCD
+    kubernetes.core.k8s:
+      state: present
+      src: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+      namespace: argocd
+      kubeconfig: "{{ kubeconfig_path }}"
 
-    - name: Wait for ArgoCD pods
-      kubernetes.core.k8s_info:
-        kind: Pod
-        namespace: argocd
-        kubeconfig: "{{ kubeconfig_path }}"
-      register: pod_status
-      retries: 30
-      delay: 10
-      until: >
-        pod_status.resources | selectattr('status.phase','equalto','Running') | list | length > 2
+  - name: Wait for ArgoCD pods
+    kubernetes.core.k8s_info:
+      kind: Pod
+      namespace: argocd
+      kubeconfig: "{{ kubeconfig_path }}"
+    register: pod_status
+    retries: 30
+    delay: 10
+    until: >
+      pod_status.resources | selectattr('status.phase','equalto','Running') | list | length > 2
 
-    - name: Create monitoring namespace
-      kubernetes.core.k8s:
-        name: monitoring
-        api_version: v1
-        kind: Namespace
-        state: present
-        kubeconfig: "{{ kubeconfig_path }}"
+  - name: Create prometheus namespace
+    kubernetes.core.k8s:
+      name: prometheus
+      api_version: v1
+      kind: Namespace
+      state: present
+      kubeconfig: "{{ kubeconfig_path }}"
 
-    - name: Install Helm
-      ansible.builtin.shell: |
-        export VERIFY_CHECKSUM=false
-        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-      args:
-        executable: /bin/bash
+  - name: Install Helm
+    ansible.builtin.shell: |
+      curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-    - name: Add prometheus helm repo
-      ansible.builtin.command: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-      environment:
-        KUBECONFIG: "{{ kubeconfig_path }}"
+  - name: Add Prometheus Helm repository
+    ansible.builtin.command:
+      cmd: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 
-    - name: Update helm repo
-      ansible.builtin.command: helm repo update
-      environment:
-        KUBECONFIG: "{{ kubeconfig_path }}"
+  - name: Update Helm repositories
+    ansible.builtin.command:
+      cmd: helm repo update
 
-    - name: Install Prometheus Stack
-      kubernetes.core.helm:
-        name: prometheus
-        chart_ref: prometheus-community/kube-prometheus-stack
-        release_namespace: monitoring
-        create_namespace: true
-        state: present
-        kubeconfig: "{{ kubeconfig_path }}"
+  - name: Install Prometheus using Helm
+    ansible.builtin.command: >
+      helm upgrade -i prometheus prometheus-community/prometheus
+      --namespace prometheus
+      --set alertmanager.persistence.storageClass="gp2"
+      --set server.persistentVolume.storageClass="gp2"
+    environment:
+      KUBECONFIG: "{{ kubeconfig_path }}"
+
+  - name: Verify Prometheus pods
+    ansible.builtin.command:
+      cmd: kubectl get pods -n prometheus
+    register: pods
+
+  - name: Show pods
+    debug:
+      var: pods.stdout
