@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 export default function HomePage() {
+
   const router = useRouter();
+  const carouselRef = useRef(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -24,7 +27,7 @@ export default function HomePage() {
         "https://images.unsplash.com/photo-1617788138017-80ad40651399?q=80&w=900",
     },
     {
-      name: "Mercedes-Benz C-Class",
+      name: "Mercedes C-Class",
       year: 2021,
       price: "Rs 42,000",
       mileage: "25,000 km",
@@ -39,6 +42,14 @@ export default function HomePage() {
       image:
         "https://images.unsplash.com/photo-1549924231-f129b911e442?q=80&w=900",
     },
+    {
+      name: "Audi RS7",
+      year: 2023,
+      price: "Rs 75,000",
+      mileage: "6,000 km",
+      image:
+        "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?q=80&w=900",
+    },
   ];
 
   const logout = async () => {
@@ -46,139 +57,308 @@ export default function HomePage() {
     router.push("/");
   };
 
+  const scrollLeft = () => {
+    carouselRef.current.scrollBy({
+      left: -350,
+      behavior: "smooth"
+    });
+  };
+
+  const scrollRight = () => {
+    carouselRef.current.scrollBy({
+      left: 350,
+      behavior: "smooth"
+    });
+  };
+
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.2 }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 40 },
+    show: { opacity: 1, y: 0 }
+  };
+
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-white font-sans">
+    <div className="min-h-screen bg-[#0b0b0b] text-white">
 
       {/* NAVBAR */}
-      <nav className="sticky top-0 z-50 bg-black/50 backdrop-blur-xl border-b border-white/10">
+      <nav className="fixed w-full top-0 z-50 bg-black/50 backdrop-blur-xl border-b border-white/10">
         <div className="max-w-7xl mx-auto px-8 py-5 flex justify-between items-center">
 
-          <h1 className="text-2xl font-bold tracking-wide">
-            Auto<span className="text-indigo-400">Lux</span>
+          <h1 className="text-2xl font-semibold tracking-wide">
+            Auto<span className="text-yellow-400">Lux</span>
           </h1>
 
-          <div className="flex gap-6 items-center">
-            <a className="hover:text-indigo-400 cursor-pointer">Browse</a>
-            <a className="hover:text-indigo-400 cursor-pointer">Sell</a>
-            <a className="hover:text-indigo-400 cursor-pointer">About</a>
+          <div className="flex gap-8 items-center text-sm">
+            <button onClick={() => router.push("/browse")} className="hover:text-yellow-400 transition">Browse</button>
+            <button onClick={() => router.push("/sell")} className="hover:text-yellow-400 transition">Sell</button>
+            <button onClick={() => router.push("/about")} className="hover:text-yellow-400 transition">About</button>
 
             <button
               onClick={logout}
-              className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 transition font-semibold"
+              className="px-5 py-2 bg-yellow-400 text-black rounded-lg font-medium hover:bg-yellow-300 transition"
             >
-              Sign Out
+              Logout
             </button>
           </div>
         </div>
       </nav>
 
-      {/* HERO SECTION */}
-      <section className="max-w-7xl mx-auto px-8 py-28 grid md:grid-cols-2 gap-16 items-center">
 
-        <div>
-          <h2 className="text-5xl font-bold leading-tight">
-            Find Your Dream <span className="text-indigo-400">Luxury Car</span>
-          </h2>
-
-          <p className="text-gray-400 mt-6 text-lg">
-            Discover premium vehicles from top brands. Buy, sell, and explore
-            the world of luxury automobiles in one place.
-          </p>
-
-          <div className="flex gap-4 mt-8">
-            <button className="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 transition font-semibold">
-              Browse Cars
-            </button>
-
-            <button className="px-6 py-3 rounded-xl border border-white/20 hover:border-indigo-400 transition">
-              Sell Your Car
-            </button>
-          </div>
-        </div>
+      {/* HERO */}
+      <section className="h-screen flex items-center relative overflow-hidden">
 
         <img
-          src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1400"
-          className="rounded-3xl shadow-2xl"
+          src="https://images.unsplash.com/photo-1503376780353-7e6692767b70"
+          className="absolute w-full h-full object-cover opacity-40"
         />
-      </section>
 
-      {/* SEARCH BAR */}
-      <section className="max-w-6xl mx-auto px-8">
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 grid md:grid-cols-4 gap-4">
+        <div className="max-w-7xl mx-auto px-8 relative">
 
-          <input
-            placeholder="Brand"
-            className="bg-black/40 border border-white/10 rounded-lg px-4 py-3 outline-none"
-          />
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+          >
 
-          <input
-            placeholder="Model"
-            className="bg-black/40 border border-white/10 rounded-lg px-4 py-3 outline-none"
-          />
+            <h2 className="text-7xl font-bold leading-tight">
+              Find Your
+              <br />
+              <span className="text-yellow-400">Luxury Car</span>
+            </h2>
 
-          <input
-            placeholder="Max Price"
-            className="bg-black/40 border border-white/10 rounded-lg px-4 py-3 outline-none"
-          />
+            <p className="text-gray-400 mt-6 max-w-xl text-lg">
+              Buy and sell premium vehicles with confidence.
+              Discover curated luxury cars from top brands worldwide.
+            </p>
 
-          <button className="bg-indigo-600 hover:bg-indigo-500 rounded-lg font-semibold">
-            Search
-          </button>
+            <div className="flex gap-6 mt-10">
+
+              <button
+                onClick={() => router.push("/browse")}
+                className="px-8 py-4 bg-yellow-400 text-black rounded-lg font-medium hover:scale-105 transition"
+              >
+                Browse Cars
+              </button>
+
+              <button
+                onClick={() => router.push("/sell")}
+                className="px-8 py-4 border border-white/20 rounded-lg hover:border-yellow-400 transition"
+              >
+                Sell Car
+              </button>
+
+            </div>
+
+          </motion.div>
 
         </div>
+
       </section>
 
-      {/* FEATURED CARS */}
-      <section className="max-w-7xl mx-auto px-8 py-24">
 
-        <h3 className="text-4xl font-bold mb-12">
-          Featured <span className="text-indigo-400">Collection</span>
+      {/* FEATURED */}
+<section className="max-w-14xl mx-auto px-8 py-24 overflow-hidden">
+
+  <div className="flex justify-between items-center mb-14">
+    <h3 className="text-4xl font-semibold">
+      Featured <span className="text-yellow-400">Cars</span>
+    </h3>
+
+    <button
+      onClick={() => router.push("/browse")}
+      className="text-sm border border-white/20 px-4 py-2 rounded-lg hover:border-yellow-400 hover:text-yellow-400 transition"
+    >
+      View All
+    </button>
+  </div>
+
+  <div className="relative overflow-hidden">
+
+    <motion.div
+      className="flex gap-8"
+      animate={{ x: ["0%", "-100%"] }}
+      transition={{
+        ease: "linear",
+        duration: 20,
+        repeat: Infinity
+      }}
+    >
+
+      {[...vehicles, ...vehicles].map((car, i) => (
+
+        <div
+          key={i}
+          className="min-w-[320px] bg-[#111] rounded-2xl overflow-hidden border border-white/5 hover:border-yellow-400/50 transition group"
+        >
+
+          <div className="h-56 overflow-hidden">
+            <img
+              src={car.image}
+              className="w-full h-full object-cover group-hover:scale-110 transition duration-700"
+            />
+          </div>
+
+          <div className="p-6">
+
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="text-lg font-semibold">{car.name}</h4>
+
+              <span className="text-xs bg-yellow-400 text-black px-2 py-1 rounded">
+                {car.year}
+              </span>
+            </div>
+
+            <p className="text-gray-400 text-sm">
+              Mileage: {car.mileage}
+            </p>
+
+            <div className="flex justify-between items-center mt-6">
+
+              <p className="text-yellow-400 font-semibold text-lg">
+                {car.price}
+              </p>
+
+              <button
+                onClick={() => router.push(`/car/${i}`)}
+                className="text-sm border border-white/20 px-3 py-1 rounded hover:border-yellow-400 transition"
+              >
+                Details
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      ))}
+
+    </motion.div>
+
+  </div>
+
+</section>
+
+
+      {/* BROWSE + FILTER */}
+      <section className="max-w-7xl mx-auto px-8 pb-24">
+
+        <h3 className="text-4xl font-semibold mb-10">
+          Browse <span className="text-yellow-400">Cars</span>
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+        <div className="grid grid-cols-12 gap-10">
 
-          {vehicles.map((car, i) => (
-            <div
-              key={i}
-              className="rounded-3xl overflow-hidden bg-white/5 border border-white/10 hover:border-indigo-500/40 hover:scale-[1.03] transition"
-            >
+          {/* FILTER MENU */}
+          <div className="col-span-3">
 
-              <img
-                src={car.image}
-                alt={car.name}
-                className="h-64 w-full object-cover"
-              />
+            <div className="bg-[#111] border border-white/10 rounded-2xl p-6 sticky top-24">
 
-              <div className="p-7">
+              <h4 className="text-lg font-semibold mb-6">
+                Filters
+              </h4>
 
-                <h4 className="text-xl font-semibold mb-2">
-                  {car.name}
-                </h4>
-
-                <p className="text-gray-400 text-sm">
-                  {car.year} • {car.mileage}
-                </p>
-
-                <p className="text-2xl font-bold text-indigo-400 mt-4">
-                  {car.price}
-                </p>
-
-                <button className="mt-5 w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 transition">
-                  View Details
-                </button>
-
+              <div className="mb-6">
+                <label className="text-sm text-gray-400">Brand</label>
+                <select className="w-full mt-2 bg-black/40 border border-white/10 rounded-lg px-3 py-2">
+                  <option>All</option>
+                  <option>Tesla</option>
+                  <option>BMW</option>
+                  <option>Mercedes</option>
+                  <option>Audi</option>
+                </select>
               </div>
+
+              <div className="mb-6">
+                <label className="text-sm text-gray-400">Max Price</label>
+                <input
+                  type="number"
+                  placeholder="50000"
+                  className="w-full mt-2 bg-black/40 border border-white/10 rounded-lg px-3 py-2"
+                />
+              </div>
+
+              <div className="mb-6">
+                <label className="text-sm text-gray-400">Year</label>
+                <select className="w-full mt-2 bg-black/40 border border-white/10 rounded-lg px-3 py-2">
+                  <option>Any</option>
+                  <option>2024</option>
+                  <option>2023</option>
+                  <option>2022</option>
+                </select>
+              </div>
+
+              <button className="w-full mt-4 bg-yellow-400 text-black py-2 rounded-lg font-medium hover:bg-yellow-300">
+                Apply Filters
+              </button>
+
             </div>
-          ))}
+
+          </div>
+
+
+          {/* RESULTS */}
+          <div className="col-span-9">
+
+            <div className="grid md:grid-cols-3 gap-8">
+
+              {vehicles.map((car, i) => (
+
+                <div
+                  key={i}
+                  className="bg-[#111] rounded-2xl overflow-hidden border border-white/5 hover:border-yellow-400/50 transition group"
+                >
+
+                  <div className="h-48 overflow-hidden">
+                    <img
+                      src={car.image}
+                      className="w-full h-full object-cover group-hover:scale-110 transition duration-700"
+                    />
+                  </div>
+
+                  <div className="p-5">
+
+                    <h4 className="text-lg font-semibold">{car.name}</h4>
+
+                    <p className="text-gray-400 text-sm mt-1">
+                      Mileage: {car.mileage}
+                    </p>
+
+                    <div className="flex justify-between items-center mt-4">
+
+                      <p className="text-yellow-400 font-semibold">
+                        {car.price}
+                      </p>
+
+                      <button
+                        onClick={() => router.push(`/car/${i}`)}
+                        className="text-sm border border-white/20 px-3 py-1 rounded hover:border-yellow-400"
+                      >
+                        Details
+                      </button>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              ))}
+
+            </div>
+
+          </div>
 
         </div>
 
       </section>
-
-      {/* FOOTER */}
-      <footer className="border-t border-white/10 py-10 text-center text-gray-400">
-        © 2026 AutoLux — Premium Vehicle Marketplace
-      </footer>
 
     </div>
   );

@@ -2,98 +2,115 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "motion/react";
+import Link from "next/link";   // ✅ missing import
 
 export default function LoginPage() {
+
   const router = useRouter();
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [username,setUsername] = useState("");
+  const [password,setPassword] = useState("");
+  const [loading,setLoading] = useState(false);
 
   const handleLogin = async () => {
+
     setLoading(true);
 
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
+    const res = await fetch("/api/auth/login",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({username,password})
     });
 
     setLoading(false);
 
-    if (res.ok) {
+    if(res.ok){
       router.push("/home");
-    } else {
+    }else{
       alert("Invalid credentials");
     }
+
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-black to-slate-900 overflow-hidden">
 
-      {/* soft moving glow background */}
+    <div
+      className="min-h-screen flex items-center justify-center bg-cover bg-center"
+      style={{
+        backgroundImage:
+          "url(https://images.unsplash.com/photo-1503376780353-7e6692767b70)"
+      }}
+    >
 
-      <motion.div
-        animate={{ x: [0, 100, -100, 0], y: [0, -50, 50, 0] }}
-        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        className="absolute w-[500px] h-[500px] bg-indigo-500 rounded-full blur-[180px] opacity-20"
-      />
+      {/* DARK OVERLAY */}
+      <div className="absolute inset-0 bg-black/70"></div>
 
-      <motion.div
-        animate={{ x: [0, -120, 120, 0], y: [0, 80, -80, 0] }}
-        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-        className="absolute w-[500px] h-[500px] bg-purple-500 rounded-full blur-[200px] opacity-20"
-      />
+      {/* LOGIN CARD */}
+      <div className="relative z-10 w-full max-w-md backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-8 shadow-2xl">
 
-      {/* Login Card */}
+        <h1 className="text-3xl font-bold text-white text-center mb-2">
+          Auto<span className="text-yellow-500">Lux</span>
+        </h1>
 
-      <div className="relative w-full max-w-md p-8 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl">
+        <p className="text-gray-300 text-center mb-8">
+          Sign in to buy or sell luxury cars
+        </p>
 
-        <div className="text-white">
+        <form
+          onSubmit={(e)=>{
+            e.preventDefault();
+            handleLogin();
+          }}
+          className="space-y-5"
+        >
 
-          <h1 className="text-3xl font-bold text-center mb-2">
-            Welcome Back
-          </h1>
-
-          <p className="text-center text-gray-300 mb-8">
-            Login to AutoMarket
-          </p>
-
+          {/* EMAIL */}
           <input
             type="text"
-            placeholder="Username"
-            className="w-full mb-4 px-4 py-3 rounded-lg bg-black/40 border border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 outline-none transition"
+            placeholder="Email or Username"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e)=>setUsername(e.target.value)}
+            required
+            className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:border-yellow-400"
           />
 
+          {/* PASSWORD */}
           <input
             type="password"
             placeholder="Password"
-            className="w-full mb-6 px-4 py-3 rounded-lg bg-black/40 border border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 outline-none transition"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e)=>setPassword(e.target.value)}
+            required
+            className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:border-yellow-400"
           />
 
+          {/* BUTTON */}
           <button
-            onClick={handleLogin}
+            type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-lg font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:scale-[1.02] transition disabled:opacity-60"
+            className="w-full py-3 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold rounded-lg transition"
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? "Signing in..." : "Sign In"}
           </button>
 
-          <p className="text-center text-gray-300 mt-6">
-            New here?{" "}
-            <a href="/register" className="text-blue-400 hover:underline">
-              Create an account
-            </a>
-          </p>
+        </form>
 
-        </div>
+        {/* REGISTER */}
+        <p className="text-center text-gray-400 text-sm mt-6">
+          Don't have an account?{" "}
+          <Link
+            href="/register"
+            className="text-yellow-400 hover:underline"
+          >
+            Register
+          </Link>
+        </p>
+
       </div>
 
     </div>
+
   );
 }
