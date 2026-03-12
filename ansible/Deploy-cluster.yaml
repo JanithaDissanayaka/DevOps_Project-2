@@ -34,30 +34,42 @@
     until: >
       pod_status.resources | selectattr('status.phase','equalto','Running') | list | length > 2
 
-  - name: Create prometheus namespace
+
+  - name: Create Prometheus namespace
     kubernetes.core.k8s:
       name: prometheus
       api_version: v1
       kind: Namespace
       state: present
       kubeconfig: "{{ kubeconfig_path }}"
-  
+
+
   - name: Install dependencies
     ansible.builtin.shell: |
-      apt-get update
+      apt-get update -y
       apt-get install -y curl openssl
+    become: yes
+
 
   - name: Install Helm
     ansible.builtin.shell: |
       curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+    become: yes
+
 
   - name: Add Prometheus Helm repository
     ansible.builtin.command:
       cmd: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+    environment:
+      KUBECONFIG: "{{ kubeconfig_path }}"
+
 
   - name: Update Helm repositories
     ansible.builtin.command:
       cmd: helm repo update
+    environment:
+      KUBECONFIG: "{{ kubeconfig_path }}"
+
 
   - name: Install Prometheus using Helm
     ansible.builtin.command: >
@@ -68,11 +80,17 @@
     environment:
       KUBECONFIG: "{{ kubeconfig_path }}"
 
-  - name: Verify Prometheus pods
-    ansible.builtin.command:
-      cmd: kubectl get pods -n prometheus
-    register: pods
 
-  - name: Show pods
+  - name: Wait for Prometheus pods
+    ansible.builtin.shell: kubectl get pods -n prometheus
+    register: pods
+    retries: 20
+    delay: 15
+    until: "'Running' in pods.stdout"
+    environment:
+      KUBECONFIG: "{{ kubeconfig_path }}"
+
+
+  - name: Show Prometheus pods
     debug:
       var: pods.stdout
