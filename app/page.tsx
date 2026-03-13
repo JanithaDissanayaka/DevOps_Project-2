@@ -9,6 +9,7 @@ import Rating from "./components/rating";
 import Resons from "./components/resons";
 
 
+
 export default function HomePage() {
   const router = useRouter();
 
@@ -54,6 +55,8 @@ import SearchBar from "../components/searchbar";
           <span className="text-orange-500">Best</span>
         </h2>
       </div>
+
+      
 
       {/* Cards */}
       <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-10 px-6">

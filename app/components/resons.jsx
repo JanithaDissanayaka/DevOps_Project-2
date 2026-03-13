@@ -1,5 +1,5 @@
 import { Car, CreditCard, ShieldCheck, Headphones } from "lucide-react";
-import MovingEllipse from "./movingellipse";
+import { motion } from "framer-motion";
 
 const features = [
   {
@@ -30,7 +30,7 @@ export default function WhyRide() {
 
       {/* Title */}
       <div className="text-center mb-16">
-        <h2 className="text-4xl font-bold">
+        <h2 className="text-4xl font-bold text-gray-800">
           Why <span className="text-orange-500">Ride</span> With Us?
         </h2>
 
@@ -47,12 +47,26 @@ export default function WhyRide() {
 
           return (
             <div key={index} className="text-center">
-              <MovingEllipse/>
 
+              {/* Animated Icon Circle */}
+              <div className="relative w-32 h-32 mx-auto mb-6 flex items-center justify-center">
 
-              {/* Icon Circle */}
-              <div className="w-32 h-32 mx-auto flex items-center justify-center rounded-full border-8 border-orange-500 text-black mb-6">
-                <Icon size={50} />
+                {/* rotating border */}
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 4,
+                    ease: "linear",
+                  }}
+                  className="absolute inset-0 rounded-full border-8 border-orange-500 border-t-transparent"
+                />
+
+                {/* icon */}
+                <div className="w-32 h-32 flex items-center justify-center rounded-full bg-white text-black">
+                  <Icon size={50} />
+                </div>
+
               </div>
 
               {/* Title */}
