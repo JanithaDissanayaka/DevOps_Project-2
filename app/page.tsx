@@ -1,116 +1,141 @@
 "use client";
 
-import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import Link from "next/link";   // ✅ missing import
+import Link from "next/link";
 
-export default function LoginPage() {
+import SearchBar from "./components/searchbar";
+import Rating from "./components/rating";
+import Resons from "./components/resons";
 
+
+export default function HomePage() {
   const router = useRouter();
 
-  const [username,setUsername] = useState("");
-  const [password,setPassword] = useState("");
-  const [loading,setLoading] = useState(false);
-
-  const handleLogin = async () => {
-
-    setLoading(true);
-
-    const res = await fetch("/api/auth/login",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body:JSON.stringify({username,password})
-    });
-
-    setLoading(false);
-
-    if(res.ok){
-      router.push("/home");
-    }else{
-      alert("Invalid credentials");
-    }
-
-  };
-
   return (
+    <div className="bg-gray-100 min-h-screen">
 
-    <div
-      className="min-h-screen flex items-center justify-center bg-cover bg-center"
-      style={{
-        backgroundImage:
-          "url(https://images.unsplash.com/photo-1503376780353-7e6692767b70)"
-      }}
-    >
+import SearchBar from "../components/searchbar";
+      <SearchBar />
+      {/* HERO */}
+      <section className="text-center pt-15">
 
-      {/* DARK OVERLAY */}
-      <div className="absolute inset-0 bg-black/70"></div>
-
-      {/* LOGIN CARD */}
-      <div className="relative z-10 w-full max-w-md backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-8 shadow-2xl">
-
-        <h1 className="text-3xl font-bold text-white text-center mb-2">
-          Auto<span className="text-yellow-500">Lux</span>
+        {/* Main Title */}
+        <h1 className="text-7xl md:text-8xl font-extrabold text-orange-500">
+          RENT A CAR
         </h1>
 
-        <p className="text-gray-300 text-center mb-8">
-          Sign in to buy or sell luxury cars
+        {/* Subtitle */}
+        <p className="text-3xl md:text-4xl font-bold text-black mt-4">
+          ANYWHERE. ANYTIME
         </p>
 
-        <form
-          onSubmit={(e)=>{
-            e.preventDefault();
-            handleLogin();
-          }}
-          className="space-y-5"
-        >
-
-          {/* EMAIL */}
-          <input
-            type="text"
-            placeholder="Email or Username"
-            value={username}
-            onChange={(e)=>setUsername(e.target.value)}
-            required
-            className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:border-yellow-400"
+        {/* Cars Image */}
+        <div className="mt-10 flex justify-center">
+          <Image
+            src="/hero-car.png"
+            alt="Cars"
+            width={900}
+            height={400}
+            className="object-contain"
+            priority
           />
+        </div>
 
-          {/* PASSWORD */}
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e)=>setPassword(e.target.value)}
-            required
-            className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:border-yellow-400"
-          />
+      </section>
 
-          {/* BUTTON */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold rounded-lg transition"
-          >
-            {loading ? "Signing in..." : "Sign In"}
-          </button>
+      
+      <section className="py-20 bg-gray-100">
 
-        </form>
-
-        {/* REGISTER */}
-        <p className="text-center text-gray-400 text-sm mt-6">
-          Don't have an account?{" "}
-          <Link
-            href="/register"
-            className="text-yellow-400 hover:underline"
-          >
-            Register
-          </Link>
-        </p>
-
+      {/* Title */}
+      <div className="text-center mb-14">
+        <h2 className="text-4xl font-bold text-gray-800">
+          Choose the <span className="text-orange-500">Ride</span> That Fits You{" "}
+          <span className="text-orange-500">Best</span>
+        </h2>
       </div>
 
-    </div>
+      {/* Cards */}
+      <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-10 px-6">
 
+        {/* Card 1 */}
+        <div className="relative h-[420px] rounded-2xl overflow-hidden group">
+          <Image
+            src="/view-3d-car.png"
+            alt="Economy Car"
+            fill
+            className="object-cover group-hover:scale-110 transition duration-500"
+          />
+
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+
+          <div className="absolute bottom-6 left-6 text-white">
+            <h3 className="text-2xl font-bold text-black">Easy Rides</h3>
+            <p className="text-sm mb-3">Economy Vehicles</p>
+
+            <Link
+              href="/doug-bagg-Z_jNOR_8Fw0-unsplash.png"
+              className="border border-white px-4 py-2 rounded-md text-sm hover:bg-white hover:text-black transition"
+            >
+              View Vehicles
+            </Link>
+          </div>
+        </div>
+
+        {/* Card 2 */}
+        <div className="relative h-[420px] rounded-2xl overflow-hidden group">
+          <Image
+            src="/doug-bagg-Z_jNOR_8Fw0-unsplash.png"
+            alt="Comfort Car"
+            fill
+            className="object-cover group-hover:scale-110 transition duration-500"
+          />
+
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+
+          <div className="absolute bottom-6 left-6 text-white">
+            <h3 className="text-2xl font-bold">Comfort Drive</h3>
+            <p className="text-sm mb-3">Mid-Range Vehicles</p>
+
+            <Link
+              href="/vehicles"
+              className="border border-white px-4 py-2 rounded-md text-sm hover:bg-white hover:text-black transition"
+            >
+              View Vehicles
+            </Link>
+          </div>
+        </div>
+
+        {/* Card 3 */}
+        <div className="relative h-[420px] rounded-2xl overflow-hidden group">
+          <Image
+            src="/pexels-emreaslihak-19034268.png"
+            alt="Luxury Car"
+            fill
+            className="object-cover group-hover:scale-110 transition duration-500"
+          />
+
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+
+          <div className="absolute bottom-6 left-6 text-white">
+            <h3 className="text-2xl font-bold">Elite Wheels</h3>
+            <p className="text-sm mb-3">Luxury Vehicles</p>
+
+            <Link
+              href="/vehicles"
+              className="border border-white px-4 py-2 rounded-md text-sm hover:bg-white hover:text-black transition"
+            >
+              View Vehicles
+            </Link>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+   <Rating/>
+   <Resons/>
+
+    </div>
   );
 }

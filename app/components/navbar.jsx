@@ -3,83 +3,43 @@
 import Link from "next/link";
 
 export default function Navbar() {
-
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-black/70 border-b border-white/10">
-
+    <nav className="w-full bg-[#0d1325] border-b border-orange-500">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
-        {/* LOGO */}
-        <Link href="/" className="flex items-start gap-2">
+        {/* Logo */}
+        <div className="text-2xl font-bold">
+          <span className="text-white">Trip</span>
+          <span className="text-orange-500">Go</span>
+        </div>
 
-          <span className="text-2xl font-bold text-white tracking-wide">
-            Auto<span className="text-yellow-500">Lux</span>
-          </span>
-
-        </Link>
-
-        {/* NAV LINKS */}
-        <div className="hidden md:flex items-center gap-8 text-sm text-gray-300">
-
-          <Link
-            href="/"
-            className="hover:text-yellow-400 transition"
-          >
+        {/* Navigation Links */}
+        <div className="hidden md:flex gap-10 text-white font-medium">
+          <Link href="/" className="hover:text-orange-400 transition">
             Home
           </Link>
 
-          <Link
-            href="/cars"
-            className="hover:text-yellow-400 transition"
-          >
-            Browse Cars
+          <Link href="/cars" className="hover:text-orange-400 transition">
+            Vehicles
           </Link>
 
-          <Link
-            href="/sell"
-            className="hover:text-yellow-400 transition"
-          >
-            Sell Car
+          <Link href="/contactus" className="hover:text-orange-400 transition">
+            Contact Us
           </Link>
 
-          <Link
-            href="/about"
-            className="hover:text-yellow-400 transition"
-          >
-            About
+          <Link href="/aboutus" className="hover:text-orange-400 transition">
+            About Us
           </Link>
-
         </div>
 
-        {/* RIGHT SIDE */}
-        <div className="flex items-center gap-4">
-
-          {/* SEARCH */}
-          <input
-            type="text"
-            placeholder="Search cars..."
-            className="hidden lg:block px-4 py-2 text-sm rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400"
-          />
-
-          {/* LOGIN */}
-          <Link
-            href="/"
-            className="px-4 py-2 text-sm border border-white/20 rounded-lg text-white hover:bg-yellow-500/10 transition"
-          >
-            Login
-          </Link>
-
-          <Link
-            href="/register"
-            className="px-4 py-2 text-sm border border-white/20 rounded-lg text-white hover:bg-yellow-500/10 transition"
-          >
-            Register
-          </Link>
-
-        </div>
-
+        {/* Login Button */}
+        <Link
+          href="/loging"
+          className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-md font-semibold transition"
+        >
+          Login | Register
+        </Link>
       </div>
-
     </nav>
   );
 }
