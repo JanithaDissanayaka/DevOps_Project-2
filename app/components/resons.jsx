@@ -1,24 +1,24 @@
-import { Car, CreditCard, ShieldCheck, Headphones } from "lucide-react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 const features = [
   {
-    icon: Car,
+    img: "/reson1.png",
     title: "Wide Range of Vehicles",
     desc: "From budget-friendly cars to luxury rides, we’ve got the perfect match for every trip.",
   },
   {
-    icon: CreditCard,
+    img: "/reson2.png",
     title: "Easy & Secure Payments",
     desc: "Simple and secure payment options for a smooth booking experience.",
   },
   {
-    icon: ShieldCheck,
+    img: "/reson3.png",
     title: "Hassle-Free Booking",
     desc: "Quick and easy booking process designed to save you time.",
   },
   {
-    icon: Headphones,
+    img: "/reson4.png",
     title: "24/7 Customer Support",
     desc: "Our support team is available anytime to assist your journey.",
   },
@@ -43,28 +43,41 @@ export default function WhyRide() {
       <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-10 px-6">
 
         {features.map((item, index) => {
-          const Icon = item.icon;
 
           return (
             <div key={index} className="text-center">
 
-              {/* Animated Icon Circle */}
+              {/* Animated Circle */}
               <div className="relative w-32 h-32 mx-auto mb-6 flex items-center justify-center">
 
                 {/* rotating border */}
                 <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{
-                    repeat: Infinity,
-                    duration: 4,
-                    ease: "linear",
-                  }}
-                  className="absolute inset-0 rounded-full border-8 border-orange-500 border-t-transparent"
-                />
+  animate={{ rotate: 360 }}
+  transition={{
+    repeat: Infinity,
+    duration: 4,
+    ease: "linear",
+  }}
+  className="absolute inset-0 rounded-full border-[4px] border-transparent"
+  style={{
+    background:
+      "conic-gradient(#f97316, #f97316, #000000, #000000)",
+    WebkitMask:
+      "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+    WebkitMaskComposite: "xor",
+    padding: "8px",
+  }}
+/>
 
-                {/* icon */}
-                <div className="w-32 h-32 flex items-center justify-center rounded-full bg-white text-black">
-                  <Icon size={50} />
+
+                {/* image */}
+                <div className="w-32 h-32 flex items-center justify-center rounded-full bg-white">
+                  <Image
+                    src={item.img}
+                    alt={item.title}
+                    width={80}
+                    height={80}
+                  />
                 </div>
 
               </div>
