@@ -28,9 +28,10 @@ export default function ContactPage() {
 
           <p className="text-gray-500 mb-8">
             Have a question about a vehicle, your booking, or anything else?
-            We're here to help. Fill out the form below and we'll get back to
+            We&apos;re here to help. Fill out the form below and we&apos;ll get back to
             you as soon as possible.
           </p>
+
 
           <form className="space-y-5">
 
