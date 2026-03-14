@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import SearchBar from "../components/searchbar";
 
 const cars = [
   {
@@ -37,10 +38,11 @@ const cars = [
 
 export default function CarsPage() {
   return (
-    <div className="min-h-screen bg-gray-100 py-20 px-6">
+    <div className="min-h-screen bg-gray-100 py-8 px-4">
+      <SearchBar/>
 
       {/* Title */}
-      <div className="text-center mb-14">
+      <div className="text-center mb-14 pt-10 ">
         <h1 className="text-4xl font-bold text-gray-800">
           Available <span className="text-orange-500">Vehicles</span>
         </h1>
