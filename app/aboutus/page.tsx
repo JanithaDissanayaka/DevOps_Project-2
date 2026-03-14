@@ -48,7 +48,7 @@ export default function AboutPage() {
           At TripGo Rentals, we believe car rentals should be simple,
           affordable, and stress-free. What started as a small local
           service has grown into a trusted platform for travelers and
-          professionals alike. Whether it's a quick city ride or a
+          professionals alike. Whether it&apos;s a quick city ride or a
           luxury weekend getaway, we provide vehicles that fit every
           lifestyle.
         </p>
@@ -93,9 +93,13 @@ export default function AboutPage() {
 
               <Icon size={40} className="text-orange-500 mb-4" />
 
-              <h4 className="font-semibold text-lg text-gray-900">{item.title}</h4>
+              <h4 className="font-semibold text-lg text-gray-900">
+                {item.title}
+              </h4>
 
-              <p className="text-gray-500 text-sm mt-1">{item.text}</p>
+              <p className="text-gray-500 text-sm mt-1">
+                {item.text}
+              </p>
 
             </div>
           );
