@@ -2,7 +2,7 @@
 
 export default function SearchBar() {
   return (
-    <div className="w-full flex justify-center mt-16">
+    <div className="w-full flex justify-center">
       <div className="bg-[#151a2f] text-white rounded-2xl shadow-lg px-8 py-6 flex gap-8 items-end">
 
         {/* Pickup Location */}
