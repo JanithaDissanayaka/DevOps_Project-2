@@ -3,19 +3,19 @@ import Image from "next/image";
 const testimonials = [
   {
     name: "Michael R.",
-    image: "/user1.jpg",
+    image: "/Michael R.png",
     review:
       "Smooth booking process and the car was in great condition. Made my business trip stress-free.",
   },
   {
     name: "Amelia W.",
-    image: "/user2.jpg",
+    image: "/Amelia W.png",
     review:
       "I loved how quick and easy it was to rent. The car was clean, comfortable and fuel-efficient.",
   },
   {
     name: "The Johnson Family",
-    image: "/user3.jpg",
+    image: "/Johnson.png",
     review:
       "Perfect spacious vehicle for our weekend getaway. Safe, reliable and excellent service.",
   },
@@ -47,8 +47,8 @@ export default function Testimonials() {
               <Image
                 src={item.image}
                 alt={item.name}
-                width={80}
-                height={80}
+                width={150}
+                height={150}
                 className="rounded-full border-4 border-white"
               />
             </div>

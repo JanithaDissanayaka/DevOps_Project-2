@@ -1,6 +1,6 @@
 pipeline {
     agent any
-/**/
+    
     tools {
         nodejs 'NodeJS'
     }
@@ -202,6 +202,38 @@ pipeline {
                 kubectl apply -f argocd.yaml
 
                 kubectl get pods
+            '''
+        }
+    }
+}
+
+stage('Show Application Links') {
+    steps {
+        withCredentials([
+            [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDENTIALS']
+        ]) {
+            sh '''
+                export KUBECONFIG=$WORKSPACE/kubeconfig
+
+                echo "===== Application Access Links ====="
+
+                echo "Web App:"
+                kubectl get svc web-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+                echo ""
+
+                echo "Mongo Express:"
+                kubectl get svc mongo-express-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+                echo ""
+
+                echo "ArgoCD:"
+                kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+                echo ""
+
+                echo "Grafana:"
+                kubectl get svc grafana -n monitoring -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+                echo ""
+
+                echo "====================================="
             '''
         }
     }
