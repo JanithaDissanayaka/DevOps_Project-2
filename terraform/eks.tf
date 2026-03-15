@@ -4,7 +4,7 @@ provider "kubernetes" {
   token                  = data.aws_eks_cluster_auth.car-sale.token
   cluster_ca_certificate = base64decode(data.aws_eks_cluster.app.certificate_authority[0].data)
 }
-####
+/* fro check it work*/
 data "aws_eks_cluster" "car-sale" {
   name = module.eks.cluster_name
   depends_on = [ module.eks ]
