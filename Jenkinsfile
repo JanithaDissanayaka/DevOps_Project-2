@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    
+
     tools {
         nodejs 'NodeJS'
     }
@@ -208,6 +208,12 @@ pipeline {
 }
 
 stage('Show Application Links') {
+     agent {
+                docker {
+                    image 'janithadissanayaka/terraform-eks:latest'
+                    args '--entrypoint="" -u root'
+                }
+            }
     steps {
         withCredentials([
             [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDENTIALS']
