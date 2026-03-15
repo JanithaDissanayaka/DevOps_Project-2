@@ -219,28 +219,28 @@ stage('Show Application Links') {
             [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDENTIALS']
         ]) {
             sh '''
-                export KUBECONFIG=$WORKSPACE/kubeconfig
+export KUBECONFIG=$WORKSPACE/kubeconfig
 
-                echo "===== Application Access Links ====="
+echo "===== Application Access Links ====="
 
-                echo "Web App:"
-                kubectl get svc web-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
-                echo ""
+echo "Web App:"
+kubectl get svc web-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
+echo
 
-                echo "Mongo Express:"
-                kubectl get svc mongo-express-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
-                echo ""
+echo "Mongo Express:"
+kubectl get svc mongo-express-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
+echo
 
-                echo "ArgoCD:"
-                kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
-                echo ""
+echo "ArgoCD:"
+kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
+echo
 
-                echo "Grafana:"
-                kubectl get svc grafana -n monitoring -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
-                echo ""
+echo "Grafana:"
+kubectl get svc grafana -n prometheus -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
+echo
 
-                echo "====================================="
-            '''
+echo "====================================="
+'''
         }
     }
 }
