@@ -52,6 +52,12 @@
     environment:
       KUBECONFIG: "{{ kubeconfig_path }}"
 
+  - name: Add Grafana Helm repository
+    ansible.builtin.command:
+    environment:
+      KUBECONFIG: "{{ kubeconfig_path }}"
+
+
   - name: Update Helm repositories
     ansible.builtin.command:
       cmd: helm repo update
