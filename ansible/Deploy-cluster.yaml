@@ -46,13 +46,9 @@
     ansible.builtin.shell: |
       curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | VERIFY_CHECKSUM=false bash
 
-  - name: Install Prometheus + Grafana monitoring stack
+  - name: Add Prometheus Helm repository
     ansible.builtin.command:
-      cmd: >
-        helm upgrade --install monitoring prometheus-community/kube-prometheus-stack
-        --namespace monitoring
-        --create-namespace
-        --set grafana.service.type=LoadBalancer
+      cmd: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
     environment:
       KUBECONFIG: "{{ kubeconfig_path }}"
 
@@ -70,6 +66,15 @@
       --set server.persistentVolume.storageClass="gp2"
     environment:
       KUBECONFIG: "{{ kubeconfig_path }}"
+
+  - name: Install Prometheus
+    ansible.builtin.command: >
+      helm install grafana grafana/grafana \
+      --namespace prometheus \
+      --set service.type=LoadBalancer
+    environment:
+      KUBECONFIG: "{{ kubeconfig_path }}"
+
 
   - name: Verify Prometheus pods
     ansible.builtin.command:
