@@ -67,7 +67,7 @@
     environment:
       KUBECONFIG: "{{ kubeconfig_path }}"
 
-  - name: Install Prometheus
+  - name: Install Grafana
     ansible.builtin.command: >
       helm install grafana grafana/grafana \
       --namespace prometheus \
