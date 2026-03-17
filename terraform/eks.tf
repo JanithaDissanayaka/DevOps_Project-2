@@ -17,7 +17,7 @@ module "eks" {
   version = "~> 21.0"
 
   name               = var.cluster_name
-  kubernetes_version = "1.29"   # ✅ stable version
+  kubernetes_version = "1.33"   # ✅ stable version
 
   enable_irsa = true            # ✅ REQUIRED
 
