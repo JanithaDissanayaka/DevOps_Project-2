@@ -23,15 +23,22 @@ module "eks" {
   kubernetes_version = "1.33"
 
   addons = {
-    coredns                = {}
-    eks-pod-identity-agent = {
-      before_compute = true
-    }
-    kube-proxy             = {}
-    vpc-cni                = {
-      before_compute = true
-    }
+  coredns = {}
+
+  eks-pod-identity-agent = {
+    before_compute = true
   }
+
+  kube-proxy = {}
+
+  vpc-cni = {
+    before_compute = true
+  }
+
+  aws-ebs-csi-driver = {
+    most_recent = true
+  }
+}
 
   # Optional
   endpoint_public_access = true
