@@ -55,8 +55,7 @@
   - name: Add Grafana Helm repository
     ansible.builtin.command:
       cmd: helm repo add grafana-community https://grafana-community.github.io/helm-charts
-    environment:
-      KUBECONFIG: "{{ kubeconfig_path }}"
+
 
 
   - name: Update Helm repositories
@@ -76,8 +75,8 @@
 
   - name: Install Grafana
     ansible.builtin.command: >
-      helm install grafana grafana/grafana \
-      --namespace prometheus \
+      helm upgrade -i grafana grafana-community/grafana
+      --namespace prometheus
       --set service.type=LoadBalancer
     environment:
       KUBECONFIG: "{{ kubeconfig_path }}"
