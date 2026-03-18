@@ -239,7 +239,7 @@ echo "Grafana:"
 kubectl get svc grafana -n prometheus -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
 echo
 
-echo "====================================="
+
 '''
         }
     }
