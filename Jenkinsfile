@@ -194,7 +194,6 @@ pipeline {
 
                 export KUBECONFIG=$WORKSPACE/kubeconfig
 
-                kubectl get nodes
 
                 # Run Ansible
                 cd ansible
@@ -239,7 +238,7 @@ echo "Grafana:"
 kubectl get svc grafana -n prometheus -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
 echo
 
-
+echo "====================================="
 '''
         }
     }
