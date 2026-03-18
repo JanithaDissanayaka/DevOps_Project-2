@@ -187,48 +187,18 @@ pipeline {
                 
                 sed -i 's/community.general.yaml/yaml/g' ansible/ansible.cfg
 
-                # Update kubeconfig
                 aws eks update-kubeconfig \
-                --region ap-south-1 \
-                --name car-sale \
-                --kubeconfig $WORKSPACE/kubeconfig
+                    --region ap-south-1 \
+                    --name car-sale \
+                    --kubeconfig $WORKSPACE/kubeconfig
 
                 export KUBECONFIG=$WORKSPACE/kubeconfig
 
-                # Check cluster
                 kubectl get nodes
-
-                # Get nodegroup dynamically
-                NODEGROUP=$(aws eks list-nodegroups \
-                --cluster-name car-sale \
-                --region ap-south-1 \
-                --query 'nodegroups[0]' \
-                --output text)
-
-                echo "Nodegroup: $NODEGROUP"
-
-                # Get IAM role dynamically
-                ROLE_ARN=$(aws eks describe-nodegroup \
-                --cluster-name car-sale \
-                --nodegroup-name $NODEGROUP \
-                --region ap-south-1 \
-                --query 'nodegroup.nodeRole' \
-                --output text)
-
-                ROLE_NAME=$(basename $ROLE_ARN)
-
-                echo "Role: $ROLE_NAME"
-
-                # Attach policy
-                aws iam attach-role-policy \
-                --role-name $ROLE_NAME \
-                --policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy
 
                 # Run Ansible
                 cd ansible
                 ansible-playbook Deploy-cluster.yaml
-
-                # Deploy ArgoCD
                 kubectl apply -f argocd.yaml
 
                 kubectl get pods
