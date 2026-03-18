@@ -8,13 +8,14 @@
 
   tasks:
 
+  # 🔥 NGINX INSTALL (FIXED)
   - name: Install NGINX Ingress Controller
     kubernetes.core.k8s:
       state: present
       src: https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
       kubeconfig: "{{ kubeconfig_path }}"
 
-  - name: Wait for ingress controller
+  - name: Wait for ingress controller pods
     kubernetes.core.k8s_info:
       kind: Pod
       namespace: ingress-nginx
@@ -23,8 +24,30 @@
     retries: 30
     delay: 10
     until: >
-      ingress_pods.resources | selectattr('status.phase','equalto','Running') | list | length > 1
+      ingress_pods.resources
+      | selectattr('status.phase','equalto','Running')
+      | list
+      | length > 0
 
+  - name: Wait for Ingress External IP
+    kubernetes.core.k8s_info:
+      kind: Service
+      name: ingress-nginx-controller
+      namespace: ingress-nginx
+      kubeconfig: "{{ kubeconfig_path }}"
+    register: ingress_svc
+    retries: 30
+    delay: 10
+    until: >
+      ingress_svc.resources[0].status.loadBalancer.ingress is defined
+
+  - name: Show Ingress URL
+    debug:
+      msg: "Ingress URL: http://{{ ingress_svc.resources[0].status.loadBalancer.ingress[0].hostname }}"
+
+  # -------------------------------
+  # ARGOCD SETUP
+  # -------------------------------
   - name: Create ArgoCD namespace
     kubernetes.core.k8s:
       name: argocd
@@ -49,8 +72,14 @@
     retries: 30
     delay: 10
     until: >
-      pod_status.resources | selectattr('status.phase','equalto','Running') | list | length > 2
+      pod_status.resources
+      | selectattr('status.phase','equalto','Running')
+      | list
+      | length > 2
 
+  # -------------------------------
+  # PROMETHEUS + GRAFANA
+  # -------------------------------
   - name: Create Prometheus namespace
     kubernetes.core.k8s:
       name: prometheus
@@ -59,28 +88,30 @@
       state: present
       kubeconfig: "{{ kubeconfig_path }}"
 
-  - name: Install Helm
-    ansible.builtin.shell: |
-      curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | VERIFY_CHECKSUM=false bash
+  - name: Install Helm (only if not exists)
+    command: helm version
+    register: helm_check
+    ignore_errors: yes
+
+  - name: Install Helm if missing
+    shell: curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | VERIFY_CHECKSUM=false bash
+    when: helm_check.rc != 0
 
   - name: Add Prometheus Helm repository
-    ansible.builtin.command:
-      cmd: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+    command: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
     environment:
       KUBECONFIG: "{{ kubeconfig_path }}"
 
   - name: Add Grafana Helm repository
-    ansible.builtin.command:
-      cmd: helm repo add grafana-community https://grafana-community.github.io/helm-charts
+    command: helm repo add grafana-community https://grafana-community.github.io/helm-charts
 
   - name: Update Helm repositories
-    ansible.builtin.command:
-      cmd: helm repo update
+    command: helm repo update
     environment:
       KUBECONFIG: "{{ kubeconfig_path }}"
 
   - name: Install Prometheus
-    ansible.builtin.command: >
+    command: >
       helm upgrade -i prometheus prometheus-community/prometheus
       --namespace prometheus
       --set alertmanager.persistence.storageClass="gp2"
@@ -89,20 +120,17 @@
       KUBECONFIG: "{{ kubeconfig_path }}"
 
   - name: Install Grafana
-    ansible.builtin.command: >
+    command: >
       helm upgrade -i grafana grafana-community/grafana
       --namespace prometheus
       --set service.type=LoadBalancer
     environment:
       KUBECONFIG: "{{ kubeconfig_path }}"
 
-
   - name: Verify Prometheus pods
-    ansible.builtin.command:
-      cmd: kubectl get pods -n prometheus
+    command: kubectl get pods -n prometheus
     register: pods
 
   - name: Show pods
     debug:
       var: pods.stdout
-  
