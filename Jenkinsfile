@@ -196,6 +196,15 @@ pipeline {
 
                 kubectl get nodes
 
+                aws eks describe-nodegroup \
+                --cluster-name car-sale \
+                --nodegroup-name example \
+                --region ap-south-1
+
+                aws iam attach-role-policy \
+                --role-name eks-node-group-example-role \
+                --policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy
+
                 # Run Ansible
                 cd ansible
                 ansible-playbook Deploy-cluster.yaml
