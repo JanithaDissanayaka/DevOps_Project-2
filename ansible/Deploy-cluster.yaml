@@ -8,6 +8,23 @@
 
   tasks:
 
+  - name: Install NGINX Ingress Controller
+    kubernetes.core.k8s:
+      state: present
+      src: https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+      kubeconfig: "{{ kubeconfig_path }}"
+
+  - name: Wait for ingress controller
+    kubernetes.core.k8s_info:
+      kind: Pod
+      namespace: ingress-nginx
+      kubeconfig: "{{ kubeconfig_path }}"
+    register: ingress_pods
+    retries: 30
+    delay: 10
+    until: >
+      ingress_pods.resources | selectattr('status.phase','equalto','Running') | list | length > 1
+
   - name: Create ArgoCD namespace
     kubernetes.core.k8s:
       name: argocd
@@ -56,8 +73,6 @@
     ansible.builtin.command:
       cmd: helm repo add grafana-community https://grafana-community.github.io/helm-charts
 
-
-
   - name: Update Helm repositories
     ansible.builtin.command:
       cmd: helm repo update
@@ -90,3 +105,4 @@
   - name: Show pods
     debug:
       var: pods.stdout
+  
