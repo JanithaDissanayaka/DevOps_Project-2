@@ -33,7 +33,7 @@ export default function Navbar() {
         {/* Right Side */}
         {!isLoggedIn ? (
           <Link
-            href="/loging"
+            href="/login"
             className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-md font-semibold"
           >
             Login | Register

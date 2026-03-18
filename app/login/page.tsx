@@ -4,18 +4,17 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export default function RegisterPage() {
-
+export default function LoginPage() {
   const router = useRouter();
 
   const [username,setUsername] = useState("");
   const [password,setPassword] = useState("");
   const [loading,setLoading] = useState(false);
 
-  const handleRegister = async () => {
+  const handleLogin = async () => {
     setLoading(true);
 
-    const res = await fetch("/api/auth/register",{
+    const res = await fetch("/api/auth/login",{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body:JSON.stringify({username,password})
@@ -24,9 +23,11 @@ export default function RegisterPage() {
     setLoading(false);
 
     if(res.ok){
-      router.push("/login");
+      localStorage.setItem("token","loggedin");
+      router.push("/");
+      router.refresh();
     } else {
-      alert("Registration failed");
+      alert("Invalid credentials");
     }
   };
 
@@ -37,7 +38,6 @@ export default function RegisterPage() {
         "url(https://images.unsplash.com/photo-1493238792000-8113da705763)"
       }}
     >
-
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/70"></div>
 
@@ -46,20 +46,27 @@ export default function RegisterPage() {
         <div className="w-full max-w-md backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-8 shadow-2xl">
 
           <h1 className="text-3xl font-bold text-white text-center mb-2">
-            Create Account
+            Welcome Back
           </h1>
 
           <p className="text-gray-300 text-center mb-8">
-            Join TripGo and start your journey 🚗
+            Login to continue your journey 🚗
           </p>
 
-          <div className="space-y-5">
+          <form
+            onSubmit={(e)=>{
+              e.preventDefault();
+              handleLogin();
+            }}
+            className="space-y-5"
+          >
 
             <input
               type="text"
-              placeholder="Username or Email"
+              placeholder="Email or Username"
               value={username}
               onChange={(e)=>setUsername(e.target.value)}
+              required
               className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:border-orange-500"
             />
 
@@ -68,23 +75,24 @@ export default function RegisterPage() {
               placeholder="Password"
               value={password}
               onChange={(e)=>setPassword(e.target.value)}
+              required
               className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:border-orange-500"
             />
 
             <button
-              onClick={handleRegister}
+              type="submit"
               disabled={loading}
               className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition"
             >
-              {loading ? "Creating account..." : "Create Account"}
+              {loading ? "Signing in..." : "Sign In"}
             </button>
 
-          </div>
+          </form>
 
           <p className="text-center text-gray-400 text-sm mt-6">
-            Already have an account?{" "}
-            <Link href="/login" className="text-orange-400 hover:underline">
-              Login
+            Don&apos;t have an account?{" "}
+            <Link href="/register" className="text-orange-400 hover:underline">
+              Register
             </Link>
           </p>
 
