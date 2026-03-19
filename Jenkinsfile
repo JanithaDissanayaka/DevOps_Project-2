@@ -170,59 +170,6 @@ pipeline {
             }
         }
 
-        stage('Install EBS CSI Driver & IAM Role') {
-            agent {
-                docker {
-                    image 'janithadissanayaka/terraform-eks:latest'
-                    args '--entrypoint="" -u root'
-                }
-            }
-
-            steps {
-                withCredentials([
-                    [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDENTIALS']
-                ]) {
-                    sh '''
-                        # Configure kubeconfig
-aws eks update-kubeconfig \
-    --region $AWS_REGION \
-    --name $CLUSTER_NAME
-
-echo "Installing eksctl..."
-
-curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" \
-| tar xz
-
-mv eksctl /usr/local/bin
-
-eksctl version
-
-echo "Installing EBS CSI Driver..."
-
-aws eks create-addon \
-    --cluster-name $CLUSTER_NAME \
-    --addon-name aws-ebs-csi-driver \
-    --region $AWS_REGION || echo "Addon already exists"
-
-echo "Creating IAM Service Account..."
-
-eksctl create iamserviceaccount \
-    --name ebs-csi-controller-sa \
-    --namespace kube-system \
-    --cluster $CLUSTER_NAME \
-    --region $AWS_REGION \
-    --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy \
-    --approve \
-    --override-existing-serviceaccounts
-
-echo "Verifying CSI Driver Pods..."
-
-kubectl get pods -n kube-system | grep ebs || true
-                    '''
-                }
-            }
-        }
-
         stage('deploy to eks with ansible'){
             agent {
                 docker {
