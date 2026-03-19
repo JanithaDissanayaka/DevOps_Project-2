@@ -15,19 +15,18 @@
       src: https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
       kubeconfig: "{{ kubeconfig_path }}"
 
-  - name: Wait for ingress controller pods
+  - name: Wait for Ingress External IP
     kubernetes.core.k8s_info:
-      kind: Pod
+      kind: Service
+      name: ingress-nginx-controller
       namespace: ingress-nginx
       kubeconfig: "{{ kubeconfig_path }}"
-    register: ingress_pods
+    register: ingress_svc
     retries: 30
     delay: 10
     until: >
-      ingress_pods.resources
-      | selectattr('status.phase','equalto','Running')
-      | list
-      | length > 0
+      ingress_svc.resources[0].status.loadBalancer.ingress is defined and
+      ingress_svc.resources[0].status.loadBalancer.ingress | length > 0
 
   - name: Wait for Ingress External IP
     kubernetes.core.k8s_info:
