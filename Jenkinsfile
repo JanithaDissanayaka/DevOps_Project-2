@@ -170,41 +170,86 @@ pipeline {
             }
         }
 
+        stage('Install EBS CSI Driver & IAM Role') {
+            agent {
+                docker {
+                    image 'janithadissanayaka/terraform-eks:latest'
+                    args '--entrypoint="" -u root'
+                }
+            }
+
+            steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDENTIALS']
+                ]) {
+                    sh '''
+                        # Configure kubeconfig
+                        aws eks update-kubeconfig \
+                            --region $AWS_REGION \
+                            --name $CLUSTER_NAME
+
+                        echo "Installing EBS CSI Driver..."
+
+                        aws eks create-addon \
+                            --cluster-name $CLUSTER_NAME \
+                            --addon-name aws-ebs-csi-driver \
+                            --region $AWS_REGION || echo "Addon already exists"
+
+                        echo "Creating IAM Service Account..."
+
+                        eksctl create iamserviceaccount \
+                            --name ebs-csi-controller-sa \
+                            --namespace kube-system \
+                            --cluster $CLUSTER_NAME \
+                            --region $AWS_REGION \
+                            --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy \
+                            --approve \
+                            --override-existing-serviceaccounts
+
+                        echo "Verifying CSI Driver Pods..."
+
+                        kubectl get pods -n kube-system | grep ebs || true
+                    '''
+                }
+            }
+        }
+
         stage('deploy to eks with ansible'){
-    agent {
-        docker {
-            image 'janithadissanayaka/ansible-k8s-aws:latest'
-            args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
+            agent {
+                docker {
+                    image 'janithadissanayaka/ansible-k8s-aws:latest'
+                    args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
+                }
+            }
+
+            steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDENTIALS']
+                ]) {
+
+                    sh '''
+                        
+                        sed -i 's/community.general.yaml/yaml/g' ansible/ansible.cfg
+
+                        aws eks update-kubeconfig \
+                            --region ap-south-1 \
+                            --name car-sale \
+                            --kubeconfig $WORKSPACE/kubeconfig
+
+                        export KUBECONFIG=$WORKSPACE/kubeconfig
+
+
+                        # Run Ansible
+                        cd ansible
+                        ansible-playbook Deploy-cluster.yaml
+                        kubectl apply -f argocd.yaml
+                        
+
+                        kubectl get pods
+                    '''
+                }
+            }
         }
-    }
-
-    steps {
-        withCredentials([
-            [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDENTIALS']
-        ]) {
-
-            sh '''
-                
-                sed -i 's/community.general.yaml/yaml/g' ansible/ansible.cfg
-
-                aws eks update-kubeconfig \
-                    --region ap-south-1 \
-                    --name car-sale \
-                    --kubeconfig $WORKSPACE/kubeconfig
-
-                export KUBECONFIG=$WORKSPACE/kubeconfig
-
-
-                # Run Ansible
-                cd ansible
-                ansible-playbook Deploy-cluster.yaml
-                kubectl apply -f argocd.yaml
-
-                kubectl get pods
-            '''
-        }
-    }
-}
 
 stage('Show Application Links') {
      agent {
@@ -213,36 +258,36 @@ stage('Show Application Links') {
                     args '--entrypoint="" -u root'
                 }
             }
-    steps {
-        withCredentials([
-            [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDENTIALS']
-        ]) {
-            sh '''
-export KUBECONFIG=$WORKSPACE/kubeconfig
+        steps {
+            withCredentials([
+                [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDENTIALS']
+            ]) {
+                sh '''
+                    export KUBECONFIG=$WORKSPACE/kubeconfig
 
-echo "===== Application Access Links ====="
+                    echo "===== Application Access Links ====="
 
-echo "Web App:"
-kubectl get svc web-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
-echo
+                    echo "Web App:"
+                    kubectl get svc web-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
+                    echo
 
-echo "Mongo Express:"
-kubectl get svc mongo-express-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
-echo
+                    echo "Mongo Express:"
+                    kubectl get svc mongo-express-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
+                    echo
 
-echo "ArgoCD:"
-kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
-echo
+                    echo "ArgoCD:"
+                    kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
+                    echo
 
-echo "Grafana:"
-kubectl get svc grafana -n prometheus -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
-echo
+                    echo "Grafana:"
+                    kubectl get svc grafana -n prometheus -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
+                    echo
 
-echo "====================================="
-'''
+                    echo "====================================="
+    '''
+            }
         }
     }
-}
 
 
     }
