@@ -7,14 +7,14 @@ pipeline {
 
     environment {
         MONGODB_URI = credentials('MONGODB_URI')
-        REPO = "janithadissanayaka/learn"
-        AWS_REGION = 'ap-south-1'
-        CLUSTER_NAME = 'car-sale'
+        REPO = "your-dockerhub-username/your-repo-name"
+        AWS_REGION = 'your-aws-region'
+        CLUSTER_NAME = 'your-cluster-name'
     }
 
     stages {
 
-         stage('Install Dependencies') {
+        stage('Install Dependencies') {
             steps { sh 'npm install' }
         }
 
@@ -23,13 +23,13 @@ pipeline {
         }
 
         stage('Take the Version') {
-            steps { 
+            steps {
                 script {
                     def packageJson = readJSON file: 'package.json'
                     env.VERSION = packageJson.version
                     echo "Version from package.json: ${env.VERSION}"
                 }
-             }
+            }
         }
 
         stage('Build') {
@@ -42,21 +42,23 @@ pipeline {
             }
         }
 
-        stage('Check Version Change'){
-            steps{
-                script{
+        stage('Check Version Change') {
+            steps {
+                script {
                     def currentVersion = readJSON(file: 'package.json').version
-                    def previousPackageJson= sh(script: "git show HEAD~1:package.json", returnStdout: true).trim()
+                    def previousPackageJson = sh(script: "git show HEAD~1:package.json", returnStdout: true).trim()
                     def previousVersion = readJSON(text: previousPackageJson).version
+
                     echo "Current Version: ${currentVersion}"
                     echo "Previous Version: ${previousVersion}"
+
                     if (currentVersion != previousVersion) {
                         env.VERSION_CHANGED = "true"
                         env.VERSION = currentVersion
-                        echo "Version has changed. Proceeding with the build."
+                        echo "Version has changed. Proceeding with build."
                     } else {
                         env.VERSION_CHANGED = "false"
-                        echo "Version has not changed. Skipping the build."
+                        echo "Version has not changed."
                     }
                 }
             }
@@ -64,7 +66,6 @@ pipeline {
 
         stage('Build Image') {
             when {
-                
                 anyOf {
                     expression { env.VERSION_CHANGED == "true" }
                     changeset "package.json"
@@ -72,9 +73,9 @@ pipeline {
                     changeset "Dockerfile"
                 }
             }
-            steps { 
+            steps {
                 script {
-                    echo "Building the docker image version ${env.VERSION}"
+                    echo "Building Docker image version ${env.VERSION}"
 
                     withCredentials([usernamePassword(
                         credentialsId: 'docker-registry-creds',
@@ -83,13 +84,13 @@ pipeline {
                     )]) {
 
                         sh """
-                            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                            echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
 
+                            # 🔐 No secrets passed into image
                             docker build \
-                            -t $REPO:carsale-${VERSION} \
-                            --build-arg MONGODB_URI=${MONGODB_URI} .
+                            -t \$REPO:app-\${VERSION} .
 
-                            docker push $REPO:carsale-${VERSION}
+                            docker push \$REPO:app-\${VERSION}
 
                             docker logout
                         """
@@ -98,7 +99,7 @@ pipeline {
             }
         }
 
-        stage('Update K8s files in ArgoCD repo') {
+        stage('Update K8s files in GitOps repo') {
             when {
                 anyOf {
                     expression { env.VERSION_CHANGED == "true" }
@@ -107,34 +108,38 @@ pipeline {
 
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'github_access_key',
+                    credentialsId: 'github_access_token',
                     usernameVariable: 'GITHUB_USER',
                     passwordVariable: 'GITHUB_TOKEN'
                 )]) {
 
                     sh """
-                    rm -rf ArgoCD
+                        rm -rf gitops-repo
 
-                    git clone https://\$GITHUB_USER:\$GITHUB_TOKEN@github.com/JanithaDissanayaka/ArgoCD.git
-                    cd ArgoCD
+                        # 🔐 Safe clone (no token in URL)
+                        git clone https://github.com/your-github-username/your-gitops-repo.git gitops-repo
+                        cd gitops-repo
 
-                    IMAGE_TAG=${REPO}:carsale-${VERSION}
+                        git config credential.helper store
+                        echo "https://\$GITHUB_USER:\$GITHUB_TOKEN@github.com" > ~/.git-credentials
 
-                    sed -i "s|image:.*|image: \${IMAGE_TAG}|g" web.yaml
+                        IMAGE_TAG=\${REPO}:app-\${VERSION}
 
-                    git config user.email "jenkins@example.com"
-                    git config user.name "jenkins"
+                        sed -i "s|image:.*|image: \${IMAGE_TAG}|g" web.yaml
 
-                    git add web.yaml
-                    git commit -m "Update image version to \${IMAGE_TAG}" || echo "No changes to commit"
+                        git config user.email "ci@example.com"
+                        git config user.name "ci-bot"
 
-                    git push origin main
+                        git add web.yaml
+                        git commit -m "Update image to \${IMAGE_TAG}" || echo "No changes to commit"
+
+                        git push origin main
                     """
                 }
             }
         }
 
-        stage('Provision Server') {
+        stage('Provision Infrastructure (Terraform)') {
             when {
                 anyOf {
                     changeset "terraform/*.tf"
@@ -143,12 +148,13 @@ pipeline {
                 }
             }
 
-        agent {
+            agent {
                 docker {
-                    image 'janithadissanayaka/terraform-eks:latest'
+                    image 'your-dockerhub-username/terraform-eks:latest'
                     args '--entrypoint="" -u root'
                 }
             }
+
             steps {
                 withCredentials([
                     [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDENTIALS']
@@ -157,6 +163,8 @@ pipeline {
                     dir('terraform') {
                         sh '''
                             terraform init
+
+                            # ⚠️ Auto-approve for demo (be careful in real prod)
                             terraform apply -auto-approve
 
                             aws eks update-kubeconfig \
@@ -170,10 +178,10 @@ pipeline {
             }
         }
 
-        stage('deploy to eks with ansible'){
+        stage('Deploy to EKS with Ansible') {
             agent {
                 docker {
-                    image 'janithadissanayaka/ansible-k8s-aws:latest'
+                    image 'your-dockerhub-username/ansible-k8s-aws:latest'
                     args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
                 }
             }
@@ -184,22 +192,19 @@ pipeline {
                 ]) {
 
                     sh '''
-                        
                         sed -i 's/community.general.yaml/yaml/g' ansible/ansible.cfg
 
                         aws eks update-kubeconfig \
-                            --region ap-south-1 \
-                            --name car-sale \
+                            --region $AWS_REGION \
+                            --name $CLUSTER_NAME \
                             --kubeconfig $WORKSPACE/kubeconfig
 
                         export KUBECONFIG=$WORKSPACE/kubeconfig
 
-
-                        # Run Ansible
                         cd ansible
                         ansible-playbook Deploy-cluster.yaml
+
                         kubectl apply -f argocd.yaml
-                        
 
                         kubectl get pods
                     '''
@@ -207,46 +212,43 @@ pipeline {
             }
         }
 
-stage('Show Application Links') {
-     agent {
+        stage('Show Application Links') {
+            agent {
                 docker {
-                    image 'janithadissanayaka/terraform-eks:latest'
+                    image 'your-dockerhub-username/terraform-eks:latest'
                     args '--entrypoint="" -u root'
                 }
             }
-        steps {
-            withCredentials([
-                [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDENTIALS']
-            ]) {
-                sh '''
-                    export KUBECONFIG=$WORKSPACE/kubeconfig
 
-                    echo "===== Application Access Links ====="
+            steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDENTIALS']
+                ]) {
+                    sh '''
+                        export KUBECONFIG=$WORKSPACE/kubeconfig
 
-                    echo "Web App:"
-                    kubectl get svc web-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
-                    echo
+                        echo "===== Application Access Links ====="
 
-                    echo "Mongo Express:"
-                    kubectl get svc mongo-express-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
-                    echo
+                        echo "Web App:"
+                        kubectl get svc web-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
+                        echo
 
-                    echo "ArgoCD:"
-                    kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
-                    echo
+                        echo "Mongo Express:"
+                        kubectl get svc mongo-express-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
+                        echo
 
-                    echo "Grafana:"
-                    kubectl get svc grafana -n prometheus -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
-                    echo
+                        echo "ArgoCD:"
+                        kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
+                        echo
 
-                    echo "====================================="
-    '''
+                        echo "Grafana:"
+                        kubectl get svc grafana -n prometheus -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || true
+                        echo
+
+                        echo "====================================="
+                    '''
+                }
             }
         }
     }
-
-
-    }
 }
-
-
