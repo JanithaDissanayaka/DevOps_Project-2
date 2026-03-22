@@ -4,6 +4,7 @@ This project demonstrates a complete end-to-end DevOps pipeline to deploy a Next
 
 It showcases how an application moves from development to production in an automated and scalable cloud environment.
 
+---
 
 📌 Project Overview
 
@@ -20,6 +21,8 @@ I built this project to gain hands-on experience in:
 🏗️ Architecture
 
 Developer → GitHub → Jenkins (CI) → Docker Hub → GitOps Repo → ArgoCD → AWS EKS
+
+---
 
 ⚙️ Pipeline Workflow
 
@@ -78,7 +81,7 @@ Developer → GitHub → Jenkins (CI) → Docker Hub → GitOps Repo → ArgoCD 
 * Configured NGINX Ingress Controller
 * Managed external access to the application
 
-
+---
 
  Optimization
 
@@ -86,6 +89,7 @@ Developer → GitHub → Jenkins (CI) → Docker Hub → GitOps Repo → ArgoCD 
 * Avoided unnecessary image rebuilds
 * Improved pipeline efficiency and speed
 
+---
 
  🧠 What I Learned
 
@@ -95,6 +99,7 @@ Developer → GitHub → Jenkins (CI) → Docker Hub → GitOps Repo → ArgoCD 
 * Infrastructure as Code (Terraform & Ansible)
 * Monitoring and observability with Prometheus & Grafana
 
+---
 
 🛠️ Tech Stack
 
