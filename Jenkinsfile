@@ -86,7 +86,7 @@ pipeline {
                         sh """
                             echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
 
-                            # 🔐 No secrets passed into image
+                            
                             docker build \
                             -t \$REPO:app-\${VERSION} .
 
@@ -116,7 +116,7 @@ pipeline {
                     sh """
                         rm -rf gitops-repo
 
-                        # 🔐 Safe clone (no token in URL)
+                        
                         git clone https://github.com/your-github-username/your-gitops-repo.git gitops-repo
                         cd gitops-repo
 
@@ -164,7 +164,7 @@ pipeline {
                         sh '''
                             terraform init
 
-                            # ⚠️ Auto-approve for demo (be careful in real prod)
+                            
                             terraform apply -auto-approve
 
                             aws eks update-kubeconfig \
