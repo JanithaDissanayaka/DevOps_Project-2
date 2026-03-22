@@ -8,7 +8,6 @@
 
   tasks:
 
-  # 🔥 NGINX INSTALL (FIXED)
   - name: Install NGINX Ingress Controller
     kubernetes.core.k8s:
       state: present
@@ -28,6 +27,7 @@
       ingress_svc.resources[0].status.loadBalancer.ingress is defined and
       ingress_svc.resources[0].status.loadBalancer.ingress | length > 0
 
+##### if above code not work use this
   - name: Wait for Ingress External IP
     kubernetes.core.k8s_info:
       kind: Service
@@ -39,14 +39,13 @@
     delay: 10
     until: >
       ingress_svc.resources[0].status.loadBalancer.ingress is defined
+ #########
 
   - name: Show Ingress URL
     debug:
       msg: "Ingress URL: http://{{ ingress_svc.resources[0].status.loadBalancer.ingress[0].hostname }}"
 
-  # -------------------------------
-  # ARGOCD SETUP
-  # -------------------------------
+
   - name: Create ArgoCD namespace
     kubernetes.core.k8s:
       name: argocd
@@ -76,9 +75,6 @@
       | list
       | length > 2
 
-  # -------------------------------
-  # PROMETHEUS + GRAFANA
-  # -------------------------------
   - name: Create Prometheus namespace
     kubernetes.core.k8s:
       name: prometheus
@@ -133,5 +129,3 @@
   - name: Show pods
     debug:
       var: pods.stdout
-
-  #####
