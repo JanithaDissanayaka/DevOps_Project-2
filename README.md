@@ -117,4 +117,4 @@ Developer → GitHub → Jenkins (CI) → Docker Hub → GitOps Repo → ArgoCD 
 This project helped me understand how real-world DevOps pipelines work by integrating multiple tools into a complete production-ready workflow.
 
 
-ArgoCD repository Link: git@github.com:JanithaDissanayaka/ArgoCD.git
+ArgoCD repository Link: https://github.com/JanithaDissanayaka/ArgoCD.git
